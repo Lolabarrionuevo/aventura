@@ -7,6 +7,7 @@ import { X, ArrowRight, Timer } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ProgressBar } from '@/components/progress-bar'
 import { useSession } from '@/components/session-provider'
+import { persistStudent } from '@/lib/adventure/data'
 import { ChoiceQuestion } from './choice-question'
 import { CompleteWordQuestion } from './complete-word-question'
 import { OrderQuestion } from './order-question'
@@ -62,8 +63,11 @@ export function GamePlayer({ activity }: { activity: Activity }) {
       timeLimitSec: activity.timeLimitSec,
       baseXpReward: activity.xpReward,
     })
-    // Otorga XP al alumno en la sesión (demo). Con Neon esto persistiría.
-    setStudent({ ...student, xp: student.xp + xpEarned })
+    // Otorga XP al alumno y lo guarda (array en memoria + localStorage) para que
+    // los puntos aparezcan en el ranking y no se pierdan al recargar.
+    const updated = { ...student, xp: student.xp + xpEarned }
+    persistStudent(updated)
+    setStudent(updated)
     setResult({ score, xpEarned, timeSec })
     setDone(true)
   }
