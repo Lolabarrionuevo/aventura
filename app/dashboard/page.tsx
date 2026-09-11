@@ -18,8 +18,7 @@ import {
   subjects,
   subjectProgress,
   getActivitiesForSubject,
-  getCourseStudents,
-  courses,
+  getGradeStudents,
   getBadge,
 } from '@/lib/adventure/data'
 import {
@@ -33,7 +32,6 @@ import { cn } from '@/lib/utils'
 export default function DashboardPage() {
   const { student } = useSession()
   const level = levelFromXp(student.xp)
-  const course = courses.find((c) => c.id === student.courseId)
   const english = subjects[0]
 
   const progress = subjectProgress[student.id]?.[0] ?? {
@@ -45,7 +43,7 @@ export default function DashboardPage() {
     xpEarned: student.xp,
   }
 
-  const classRanking = getCourseStudents(student.courseId)
+  const classRanking = getGradeStudents(student.grade, student.division)
   const myRank = classRanking.findIndex((s) => s.id === student.id) + 1
   const dailyChallenge = getActivitiesForSubject(english.id)[3]
 
@@ -59,7 +57,7 @@ export default function DashboardPage() {
             <p className="text-sm font-semibold opacity-90">¡Hola de nuevo! 👋</p>
             <h1 className="font-display text-2xl font-extrabold md:text-3xl">{student.name}</h1>
             <p className="text-sm opacity-90">
-              {course?.name} · {course?.grade}
+              {student.grade}° {student.division} · Primaria
             </p>
           </div>
         </div>
