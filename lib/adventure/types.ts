@@ -15,6 +15,10 @@ export interface User {
 export interface Student extends User {
   role: 'alumno'
   courseId: string
+  /** Grado escolar del alumno (1 a 6). */
+  grade: number
+  /** División del grado ('A' o 'B'). */
+  division: string
   level: number
   xp: number
   streakDays: number

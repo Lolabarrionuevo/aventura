@@ -4,14 +4,14 @@ import { Crown, Flame, Zap } from 'lucide-react'
 import { AppShell } from '@/components/app-shell'
 import { Avatar } from '@/components/avatar'
 import { useSession } from '@/components/session-provider'
-import { getCourseStudents, courses } from '@/lib/adventure/data'
+import { getGradeStudents } from '@/lib/adventure/data'
 import { levelFromXp } from '@/lib/adventure/gamification'
 import { cn } from '@/lib/utils'
 
 export default function RankingPage() {
   const { student } = useSession()
-  const ranking = getCourseStudents(student.courseId)
-  const course = courses.find((c) => c.id === student.courseId)
+  const ranking = getGradeStudents(student.grade, student.division)
+  const myPlace = ranking.findIndex((r) => r.id === student.id) + 1
   const podium = ranking.slice(0, 3)
   const rest = ranking.slice(3)
   // Orden visual del podio: 2° - 1° - 3°
@@ -23,7 +23,14 @@ export default function RankingPage() {
         <h1 className="font-display text-3xl font-extrabold text-foreground">
           Ranking de la clase 🏆
         </h1>
-        <p className="text-muted-foreground">{course?.name} · Esta semana</p>
+        <p className="text-muted-foreground">
+          {student.grade}° {student.division} · Esta semana
+        </p>
+        {myPlace > 0 && (
+          <p className="mt-1 text-sm font-bold text-primary">
+            Tu posición: #{myPlace} de {ranking.length}
+          </p>
+        )}
       </div>
 
       {/* Podio */}

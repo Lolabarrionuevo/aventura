@@ -46,6 +46,8 @@ export const students: Student[] = [
     role: 'alumno',
     avatar: '/avatars/sofia.png',
     courseId: 'c-4a',
+    grade: 4,
+    division: 'A',
     level: 6,
     xp: 1580,
     streakDays: 5,
@@ -58,6 +60,8 @@ export const students: Student[] = [
     role: 'alumno',
     avatar: '/avatars/mateo.png',
     courseId: 'c-4a',
+    grade: 4,
+    division: 'A',
     level: 7,
     xp: 1920,
     streakDays: 8,
@@ -70,6 +74,8 @@ export const students: Student[] = [
     role: 'alumno',
     avatar: '/avatars/valentina.png',
     courseId: 'c-4a',
+    grade: 4,
+    division: 'A',
     level: 8,
     xp: 2350,
     streakDays: 12,
@@ -82,6 +88,8 @@ export const students: Student[] = [
     role: 'alumno',
     avatar: '/avatars/thiago.png',
     courseId: 'c-4a',
+    grade: 4,
+    division: 'A',
     level: 4,
     xp: 980,
     streakDays: 2,
@@ -94,6 +102,8 @@ export const students: Student[] = [
     role: 'alumno',
     avatar: '/avatars/emma.png',
     courseId: 'c-4a',
+    grade: 4,
+    division: 'A',
     level: 3,
     xp: 720,
     streakDays: 1,
@@ -298,6 +308,56 @@ export function getCourseStudents(courseId: string): Student[] {
   return students
     .filter((s) => s.courseId === courseId)
     .sort((a, b) => b.xp - a.xp)
+}
+
+/**
+ * Ranking de un grado + división concretos, ordenado automáticamente por XP.
+ * Un alumno de 4° A solo compite con alumnos de 4° A.
+ */
+export function getGradeStudents(grade: number, division: string): Student[] {
+  return students
+    .filter((s) => s.grade === grade && s.division === division)
+    .sort((a, b) => b.xp - a.xp)
+}
+
+// Persistencia simple del lado del cliente (localStorage) para que los alumnos
+// registrados no se pierdan al recargar. No es base de datos: solo mantiene los
+// datos que cargan las personas que usan la página.
+const STUDENTS_STORAGE_KEY = 'adventure:students'
+
+/** Carga en memoria los alumnos guardados en localStorage (sin duplicar). */
+export function loadPersistedStudents(): void {
+  if (typeof window === 'undefined') return
+  try {
+    const raw = window.localStorage.getItem(STUDENTS_STORAGE_KEY)
+    if (!raw) return
+    const saved = JSON.parse(raw) as Student[]
+    for (const s of saved) {
+      const existing = students.find((x) => x.id === s.id)
+      if (existing) Object.assign(existing, s)
+      else students.push(s)
+    }
+  } catch {
+    // Ignoramos almacenamiento corrupto.
+  }
+}
+
+/** Guarda (o actualiza) un alumno en memoria y en localStorage. */
+export function persistStudent(student: Student): void {
+  const existing = students.find((s) => s.id === student.id)
+  if (existing) Object.assign(existing, student)
+  else students.push(student)
+  if (typeof window === 'undefined') return
+  try {
+    const raw = window.localStorage.getItem(STUDENTS_STORAGE_KEY)
+    const saved = raw ? (JSON.parse(raw) as Student[]) : []
+    const idx = saved.findIndex((s) => s.id === student.id)
+    if (idx >= 0) saved[idx] = student
+    else saved.push(student)
+    window.localStorage.setItem(STUDENTS_STORAGE_KEY, JSON.stringify(saved))
+  } catch {
+    // Ignoramos errores de almacenamiento.
+  }
 }
 
 export function getStudent(id: string): Student | undefined {
