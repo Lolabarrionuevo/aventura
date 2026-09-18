@@ -10,14 +10,17 @@ import type { Student } from '@/lib/adventure/types'
 interface SessionContextValue {
   student: Student
   setStudent: (s: Student) => void
+  teacherName: string
+  setTeacherName: (name: string) => void
 }
 
 const SessionContext = createContext<SessionContextValue | null>(null)
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [student, setStudent] = useState<Student>(students[0])
+  const [teacherName, setTeacherName] = useState<string>('')
   return (
-    <SessionContext.Provider value={{ student, setStudent }}>
+    <SessionContext.Provider value={{ student, setStudent, teacherName, setTeacherName }}>
       {children}
     </SessionContext.Provider>
   )

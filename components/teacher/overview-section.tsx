@@ -32,7 +32,7 @@ export function OverviewSection({
           <h1 className="font-display text-3xl font-extrabold">
             {grade}° {division}
           </h1>
-          <p className="text-sm opacity-90">Educación primaria · ADVENTURE</p>
+          <p className="text-sm opacity-90">Inglés · Educación primaria</p>
         </div>
         <div className="rounded-2xl bg-secondary-foreground/15 px-5 py-4 text-center">
           <p className="font-display text-3xl font-extrabold leading-none">{metrics.averagePct}%</p>
@@ -74,10 +74,10 @@ export function OverviewSection({
         />
       </section>
 
-      {/* Promedio por materia */}
+      {/* Promedio por unidad de inglés */}
       <section className="rounded-3xl border border-border bg-card p-6">
         <h2 className="mb-4 font-display text-lg font-extrabold text-card-foreground">
-          Promedio por materia
+          Promedio por unidad
         </h2>
         <div className="flex flex-col gap-4">
           {results.subjectAverages.map((s) => {

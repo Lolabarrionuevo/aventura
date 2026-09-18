@@ -29,10 +29,10 @@ export function ResultsSection({ grade, division }: { grade: Grade; division: Di
         </div>
       </section>
 
-      {/* Materias */}
+      {/* Unidades de inglés */}
       <section className="rounded-3xl border border-border bg-card p-6">
         <h3 className="mb-4 font-display text-lg font-extrabold text-card-foreground">
-          Promedio por materia
+          Promedio por unidad
         </h3>
         <div className="grid gap-4 sm:grid-cols-2">
           {results.subjectAverages.map((s) => (

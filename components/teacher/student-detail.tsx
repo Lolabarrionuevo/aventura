@@ -75,10 +75,10 @@ export function StudentDetail({
       </section>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Materias */}
+        {/* Unidades de inglés */}
         <section className="rounded-3xl border border-border bg-card p-6">
           <h2 className="mb-4 font-display text-lg font-extrabold text-card-foreground">
-            Materias
+            Unidades de inglés
           </h2>
           <div className="flex flex-col gap-4">
             {student.subjects.map((s) => {

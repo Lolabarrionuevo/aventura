@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { LayoutDashboard, Users, ClipboardList, BarChart3, Trophy } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { teachers } from '@/lib/adventure/data'
+import { useSession } from '@/components/session-provider'
 import { TeacherHeader } from '@/components/teacher/teacher-header'
 import { CourseSelector } from '@/components/teacher/course-selector'
 import { OverviewSection } from '@/components/teacher/overview-section'
@@ -25,7 +25,8 @@ const SECTIONS: { id: SectionId; label: string; icon: typeof Users }[] = [
 ]
 
 export default function ProfesorPage() {
-  const teacher = teachers[0]
+  const { teacherName } = useSession()
+  const displayName = teacherName || 'Profesor/a'
   const [grade, setGrade] = useState<Grade>(4)
   const [division, setDivision] = useState<Division>('A')
   const [section, setSection] = useState<SectionId>('resumen')
@@ -48,7 +49,7 @@ export default function ProfesorPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <TeacherHeader teacherName={teacher.name} />
+      <TeacherHeader teacherName={displayName} />
 
       <main className="mx-auto max-w-6xl px-4 pb-16 pt-6">
         <div className="mb-6 flex flex-col gap-4">
@@ -88,7 +89,7 @@ export default function ProfesorPage() {
         </div>
 
         {section === 'resumen' && (
-          <OverviewSection teacherName={teacher.name} grade={grade} division={division} />
+          <OverviewSection teacherName={displayName} grade={grade} division={division} />
         )}
 
         {section === 'alumnos' &&

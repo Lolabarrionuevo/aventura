@@ -11,17 +11,21 @@ export const DIVISIONS = ['A', 'B', 'C'] as const
 export type Grade = (typeof GRADES)[number]
 export type Division = (typeof DIVISIONS)[number]
 
-export interface TeacherSubject {
+// ADVENTURE es una plataforma exclusivamente de inglés.
+// El progreso se organiza por "unidades" temáticas de inglés (no por materias).
+export interface EnglishUnit {
   id: string
   name: string
   emoji: string
 }
 
-export const TEACHER_SUBJECTS: TeacherSubject[] = [
-  { id: 'mat', name: 'Matemática', emoji: '🔢' },
-  { id: 'len', name: 'Lengua', emoji: '📖' },
-  { id: 'cie', name: 'Ciencias', emoji: '🔬' },
-  { id: 'ing', name: 'Inglés', emoji: '🇬🇧' },
+export const ENGLISH_UNITS: EnglishUnit[] = [
+  { id: 'greetings', name: 'Greetings', emoji: '👋' },
+  { id: 'colors', name: 'Colors', emoji: '🎨' },
+  { id: 'animals', name: 'Animals', emoji: '🐶' },
+  { id: 'numbers', name: 'Numbers', emoji: '🔢' },
+  { id: 'family', name: 'Family', emoji: '👨‍👩‍👧' },
+  { id: 'verbs', name: 'Verbs', emoji: '🏃' },
 ]
 
 export interface CourseStudent {
@@ -97,10 +101,12 @@ const LAST_NAMES = [
 ]
 
 const TOPICS: Record<string, string[]> = {
-  mat: ['Sumas y restas', 'Multiplicación', 'División', 'Fracciones', 'Geometría', 'Problemas'],
-  len: ['Lectura', 'Ortografía', 'Sustantivos', 'Verbos', 'Comprensión', 'Escritura'],
-  cie: ['El cuerpo humano', 'Los animales', 'Las plantas', 'El agua', 'El sistema solar', 'Materiales'],
-  ing: ['Colores', 'Animales', 'Números', 'La familia', 'Saludos', 'Verbos'],
+  greetings: ['Hello & goodbye', 'How are you?', 'Introductions', 'Please & thank you'],
+  colors: ['Primary colors', 'Describing objects', 'Red, blue, green', 'Favourite color'],
+  animals: ['Pets', 'Farm animals', 'Wild animals', 'Animal sounds'],
+  numbers: ['1 to 10', '10 to 20', 'Counting', 'How many?'],
+  family: ['Family members', 'My family', 'Possessives', 'This is my...'],
+  verbs: ['To be', 'Action verbs', 'Present simple', 'Can / can\'t'],
 }
 
 function courseSeed(grade: Grade, division: Division): number {
@@ -184,7 +190,7 @@ export function getStudentDetail(
 
   const rng = makeRng(courseSeed(grade, division) + Number(studentId.split('-')[1]) * 31)
 
-  const subjects: StudentSubjectStat[] = TEACHER_SUBJECTS.map((subject) => ({
+  const subjects: StudentSubjectStat[] = ENGLISH_UNITS.map((subject) => ({
     subjectId: subject.id,
     progressPct: between(rng, 40, 100),
     correctPct: between(rng, 55, 99),
@@ -220,7 +226,7 @@ export function getCourseActivities(grade: Grade): CourseActivity[] {
   const activities: CourseActivity[] = []
 
   let counter = 0
-  for (const subject of TEACHER_SUBJECTS) {
+  for (const subject of ENGLISH_UNITS) {
     const perSubject = between(rng, 1, 2)
     for (let i = 0; i < perSubject; i++) {
       const topic = pick(rng, TOPICS[subject.id])
@@ -294,7 +300,7 @@ export function getCourseResults(grade: Grade, division: Division): CourseResult
   const rng = makeRng(courseSeed(grade, division) + 401)
   const activities = getCourseActivities(grade)
 
-  const subjectAverages: SubjectAverage[] = TEACHER_SUBJECTS.map((subject) => ({
+  const subjectAverages: SubjectAverage[] = ENGLISH_UNITS.map((subject) => ({
     subjectId: subject.id,
     name: subject.name,
     emoji: subject.emoji,
@@ -312,7 +318,7 @@ export function getCourseResults(grade: Grade, division: Division): CourseResult
   const mostErrors = [...activities].sort((a, b) => a.avgPct - b.avgPct).slice(0, 3)
 
   const reinforceTopics = mostErrors.map((a) => {
-    const subject = TEACHER_SUBJECTS.find((s) => s.id === a.subjectId)!
+    const subject = ENGLISH_UNITS.find((s) => s.id === a.subjectId)!
     return {
       topic: a.topic,
       subjectId: a.subjectId,
@@ -329,8 +335,8 @@ export function getRanking(grade: Grade, division: Division): CourseStudent[] {
   return getCourseStudents(grade, division)
 }
 
-export function subjectMeta(subjectId: string): TeacherSubject {
-  return TEACHER_SUBJECTS.find((s) => s.id === subjectId) ?? TEACHER_SUBJECTS[0]
+export function subjectMeta(subjectId: string): EnglishUnit {
+  return ENGLISH_UNITS.find((s) => s.id === subjectId) ?? ENGLISH_UNITS[0]
 }
 
 export function levelProgress(xp: number): number {

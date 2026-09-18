@@ -14,7 +14,7 @@ type Role = 'alumno' | 'profesor'
 
 export default function RegistroPage() {
   const router = useRouter()
-  const { setStudent } = useSession()
+  const { setStudent, setTeacherName } = useSession()
   const [role, setRole] = useState<Role>('alumno')
   const [name, setName] = useState('')
   const [username, setUsername] = useState('')
@@ -48,6 +48,7 @@ export default function RegistroPage() {
       router.push('/dashboard')
       return
     }
+    setTeacherName(name)
     router.push('/profesor')
   }
 
