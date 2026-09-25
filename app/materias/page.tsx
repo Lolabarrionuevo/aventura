@@ -5,7 +5,7 @@ import { Zap, ChevronRight } from 'lucide-react'
 import { AppShell } from '@/components/app-shell'
 import { ProgressBar } from '@/components/progress-bar'
 import { useSession } from '@/components/session-provider'
-import { subjects, subjectProgress, getActivitiesForSubject } from '@/lib/adventure/data'
+import { subjects, subjectProgress, getActivitiesForSubject, getActivitiesForGrade } from '@/lib/adventure/data'
 import {
   GAME_TYPE_META,
   difficultyLabel,
@@ -22,7 +22,12 @@ const DIFFICULTY_STYLE: Record<string, string> = {
 export default function MateriasPage() {
   const { student } = useSession()
   const english = subjects[0]
-  const activities = getActivitiesForSubject(english.id)
+  const subjectActivities = getActivitiesForSubject(english.id)
+  const gradeActivities = getActivitiesForGrade(student.grade)
+  const teacherActivities = gradeActivities.filter(
+    (a) => a.createdByTeacher && !subjectActivities.some((sa) => sa.id === a.id),
+  )
+  const activities = [...subjectActivities, ...teacherActivities]
   const progress = subjectProgress[student.id]?.[0]
   const progressPct = progress?.progressPct ?? 0
 

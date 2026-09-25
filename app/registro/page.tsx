@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation'
 import { GraduationCap, Users, UserPlus } from 'lucide-react'
 import { AuthShell } from '@/components/auth/auth-shell'
 import { useSession } from '@/components/session-provider'
-import { students } from '@/lib/adventure/data'
+import { students, teachers, GRADE_OPTIONS, GRADE_LABELS } from '@/lib/adventure/data'
+import type { Grade, Student, Teacher } from '@/lib/adventure/types'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
 
@@ -14,11 +15,12 @@ type Role = 'alumno' | 'profesor'
 
 export default function RegistroPage() {
   const router = useRouter()
-  const { setStudent } = useSession()
+  const { setStudent, setTeacher } = useSession()
   const [role, setRole] = useState<Role>('alumno')
   const [name, setName] = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [grade, setGrade] = useState<Grade | ''>('')
   const [error, setError] = useState('')
 
   function handleSubmit(e: React.FormEvent) {
@@ -28,16 +30,20 @@ export default function RegistroPage() {
       setError('Completa todos los campos para crear tu cuenta.')
       return
     }
+    if (!grade) {
+      setError('Seleccioná tu grado para continuar.')
+      return
+    }
 
     if (role === 'alumno') {
-      // Demo: creamos un alumno nuevo en memoria y arrancamos su aventura.
-      const newStudent = {
+      const newStudent: Student = {
         id: `st-${Date.now()}`,
         name,
         username: username.toLowerCase(),
-        role: 'alumno' as const,
+        role: 'alumno',
         avatar: '',
         courseId: 'c-4a',
+        grade: grade as Grade,
         level: 1,
         xp: 0,
         streakDays: 0,
@@ -48,6 +54,18 @@ export default function RegistroPage() {
       router.push('/dashboard')
       return
     }
+
+    const newTeacher: Teacher = {
+      id: `t-${Date.now()}`,
+      name,
+      username: username.toLowerCase(),
+      role: 'profesor',
+      avatar: '',
+      courseIds: ['c-4a'],
+      grade: grade as Grade,
+    }
+    teachers.push(newTeacher)
+    setTeacher(newTeacher)
     router.push('/profesor')
   }
 
@@ -90,6 +108,26 @@ export default function RegistroPage() {
             autoComplete="new-password"
             className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base outline-none transition-colors focus:border-ring focus:ring-3 focus:ring-ring/40"
           />
+        </Field>
+
+        <Field label={role === 'alumno' ? '¿En qué grado estás?' : '¿A qué grado enseñás?'}>
+          <div className="grid grid-cols-3 gap-2">
+            {GRADE_OPTIONS.map((g) => (
+              <button
+                key={g}
+                type="button"
+                onClick={() => setGrade(g)}
+                className={cn(
+                  'rounded-xl border-2 py-3 text-sm font-bold transition-colors',
+                  grade === g
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-border bg-background text-muted-foreground hover:border-ring/50',
+                )}
+              >
+                {GRADE_LABELS[g]}
+              </button>
+            ))}
+          </div>
         </Field>
 
         {error && (

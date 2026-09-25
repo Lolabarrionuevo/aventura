@@ -2,6 +2,7 @@ import type {
   Activity,
   Badge,
   Course,
+  Grade,
   Student,
   StudentAnalysis,
   Subject,
@@ -36,6 +37,7 @@ export const teachers: Teacher[] = [
     role: 'profesor',
     avatar: '/avatars/teacher.png',
     courseIds: ['c-4a'],
+    grade: '4',
   },
 ]
 
@@ -47,6 +49,7 @@ export const students: Student[] = [
     role: 'alumno',
     avatar: '/avatars/sofia.png',
     courseId: 'c-4a',
+    grade: '4',
     level: 6,
     xp: 1580,
     streakDays: 5,
@@ -59,6 +62,7 @@ export const students: Student[] = [
     role: 'alumno',
     avatar: '/avatars/mateo.png',
     courseId: 'c-4a',
+    grade: '4',
     level: 7,
     xp: 1920,
     streakDays: 8,
@@ -71,6 +75,7 @@ export const students: Student[] = [
     role: 'alumno',
     avatar: '/avatars/valentina.png',
     courseId: 'c-4a',
+    grade: '4',
     level: 8,
     xp: 2350,
     streakDays: 12,
@@ -83,6 +88,7 @@ export const students: Student[] = [
     role: 'alumno',
     avatar: '/avatars/thiago.png',
     courseId: 'c-4a',
+    grade: '4',
     level: 4,
     xp: 980,
     streakDays: 2,
@@ -95,6 +101,7 @@ export const students: Student[] = [
     role: 'alumno',
     avatar: '/avatars/emma.png',
     courseId: 'c-4a',
+    grade: '4',
     level: 3,
     xp: 720,
     streakDays: 1,
@@ -123,6 +130,7 @@ export const activities: Activity[] = [
     type: 'multiple-choice',
     difficulty: 'facil',
     subjectId: 's-english',
+    grade: '4',
     xpReward: 60,
     questions: [
       {
@@ -153,6 +161,7 @@ export const activities: Activity[] = [
     type: 'true-false',
     difficulty: 'facil',
     subjectId: 's-english',
+    grade: '4',
     xpReward: 50,
     questions: [
       { id: 'q1', prompt: '"Red" significa rojo', options: ['Verdadero', 'Falso'], answerIndex: 0 },
@@ -168,6 +177,7 @@ export const activities: Activity[] = [
     type: 'complete-word',
     difficulty: 'medio',
     subjectId: 's-english',
+    grade: '4',
     xpReward: 80,
     questions: [
       { id: 'q1', prompt: 'Casa en inglés: h___', hint: 'house', answer: 'house' },
@@ -182,6 +192,7 @@ export const activities: Activity[] = [
     type: 'match-concepts',
     difficulty: 'medio',
     subjectId: 's-english',
+    grade: '4',
     xpReward: 90,
     questions: [
       {
@@ -203,6 +214,7 @@ export const activities: Activity[] = [
     type: 'order-elements',
     difficulty: 'dificil',
     subjectId: 's-english',
+    grade: '4',
     xpReward: 100,
     questions: [
       { id: 'q1', prompt: 'Ordena: "Me llamo Ana"', sequence: ['My', 'name', 'is', 'Ana'] },
@@ -216,6 +228,7 @@ export const activities: Activity[] = [
     type: 'image-question',
     difficulty: 'facil',
     subjectId: 's-english',
+    grade: '4',
     xpReward: 70,
     questions: [
       {
@@ -241,6 +254,7 @@ export const activities: Activity[] = [
     type: 'memory',
     difficulty: 'medio',
     subjectId: 's-english',
+    grade: '4',
     xpReward: 85,
     questions: [
       {
@@ -262,6 +276,7 @@ export const activities: Activity[] = [
     type: 'timed-quiz',
     difficulty: 'dificil',
     subjectId: 's-english',
+    grade: '4',
     xpReward: 120,
     timeLimitSec: 45,
     questions: [
@@ -594,4 +609,23 @@ export function getStudent(id: string): Student | undefined {
 
 export function getStudentAnalysis(id: string): StudentAnalysis | undefined {
   return studentAnalyses[id]
+}
+
+export const GRADE_LABELS: Record<Grade, string> = {
+  '1': '1.º grado',
+  '2': '2.º grado',
+  '3': '3.º grado',
+  '4': '4.º grado',
+  '5': '5.º grado',
+  '6': '6.º grado',
+}
+
+export const GRADE_OPTIONS: Grade[] = ['1', '2', '3', '4', '5', '6']
+
+export function getActivitiesForGrade(grade: Grade): Activity[] {
+  return activities.filter((a) => a.grade === grade)
+}
+
+export function addActivity(activity: Activity): void {
+  activities.push(activity)
 }

@@ -14,7 +14,7 @@ type Role = 'alumno' | 'profesor'
 
 export default function LoginPage() {
   const router = useRouter()
-  const { setStudent } = useSession()
+  const { setStudent, setTeacher } = useSession()
   const [role, setRole] = useState<Role>('alumno')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -46,6 +46,7 @@ export default function LoginPage() {
       setError('No encontramos ese profesor. Prueba con "laura".')
       return
     }
+    setTeacher(teacher)
     router.push('/profesor')
   }
 

@@ -4,6 +4,8 @@
 
 export type Role = 'alumno' | 'profesor' | 'admin'
 
+export type Grade = '1' | '2' | '3' | '4' | '5' | '6'
+
 export interface User {
   id: string
   name: string
@@ -15,6 +17,7 @@ export interface User {
 export interface Student extends User {
   role: 'alumno'
   courseId: string
+  grade: Grade
   level: number
   xp: number
   streakDays: number
@@ -24,6 +27,7 @@ export interface Student extends User {
 export interface Teacher extends User {
   role: 'profesor'
   courseIds: string[]
+  grade: Grade
 }
 
 export interface Course {
@@ -81,10 +85,13 @@ export interface Activity {
   type: GameType
   difficulty: Difficulty
   subjectId: string
+  grade: Grade
   xpReward: number
   /** Duración sugerida / límite en segundos para timed-quiz. */
   timeLimitSec?: number
   questions: Question[]
+  /** Marca actividades creadas por el profesor (vs. las preexistentes). */
+  createdByTeacher?: boolean
 }
 
 export interface Badge {
