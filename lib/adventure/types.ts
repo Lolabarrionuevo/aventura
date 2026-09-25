@@ -122,3 +122,61 @@ export interface SubjectProgress {
   activitiesCompleted: number
   xpEarned: number
 }
+
+/** Habilidades globales evaluadas en inglés. */
+export type Skill = 'Vocabulary' | 'Grammar' | 'Reading' | 'Listening' | 'Writing'
+
+export type SkillStatus = 'dominado' | 'en-progreso' | 'necesita-refuerzo'
+
+export interface SkillResult {
+  skill: Skill
+  pct: number
+  status: SkillStatus
+}
+
+/** Tema concreto dentro de una habilidad (ej. "Present Simple"). */
+export interface TopicResult {
+  topic: string
+  skill: Skill
+  pct: number
+  status: SkillStatus
+}
+
+/** Punto en la evolución temporal del rendimiento. */
+export interface PerformancePoint {
+  date: string
+  score: number
+}
+
+/** Resumen de una actividad realizada por un alumno. */
+export interface ActivitySummary {
+  activityId: string
+  title: string
+  score: number
+  correctCount: number
+  totalCount: number
+  timeSec: number
+  date: string
+  status: 'completada' | 'pendiente'
+}
+
+/** Análisis completo de un alumno para el portal del profesor. */
+export interface StudentAnalysis {
+  studentId: string
+  xp: number
+  level: number
+  streakDays: number
+  overallProgressPct: number
+  activitiesCompleted: number
+  activitiesPending: number
+  correctPct: number
+  incorrectPct: number
+  totalAttempts: number
+  avgTimeSec: number
+  performance: PerformancePoint[]
+  skills: SkillResult[]
+  topics: TopicResult[]
+  recentActivities: ActivitySummary[]
+  weakTopics: TopicResult[]
+  recommendation: string
+}
