@@ -5,12 +5,8 @@ import { Zap, ChevronRight } from 'lucide-react'
 import { AppShell } from '@/components/app-shell'
 import { ProgressBar } from '@/components/progress-bar'
 import { useSession } from '@/components/session-provider'
-import { subjects, subjectProgress, getActivitiesForSubject } from '@/lib/adventure/data'
-import {
-  GAME_TYPE_META,
-  difficultyLabel,
-  levelFromXp,
-} from '@/lib/adventure/gamification'
+import { subjects, getStudentProgress, getActivitiesForSubject } from '@/lib/adventure/data'
+import { GAME_TYPE_META, difficultyLabel } from '@/lib/adventure/gamification'
 import { cn } from '@/lib/utils'
 
 const DIFFICULTY_STYLE: Record<string, string> = {
@@ -22,9 +18,9 @@ const DIFFICULTY_STYLE: Record<string, string> = {
 export default function MateriasPage() {
   const { student } = useSession()
   const english = subjects[0]
-  const activities = getActivitiesForSubject(english.id)
-  const progress = subjectProgress[student.id]?.[0]
-  const progressPct = progress?.progressPct ?? 0
+  const activities = getActivitiesForSubject(english.id, student.grade)
+  const progress = getStudentProgress(student)
+  const progressPct = progress.progressPct
 
   return (
     <AppShell>
@@ -39,7 +35,7 @@ export default function MateriasPage() {
               {english.name}
             </h1>
             <p className="text-sm text-muted-foreground">
-              Nivel {progress?.level ?? levelFromXp(student.xp)} · {activities.length} actividades
+              {student.grade}° Grado · Nivel {progress.level} · {activities.length} actividades
             </p>
           </div>
         </div>

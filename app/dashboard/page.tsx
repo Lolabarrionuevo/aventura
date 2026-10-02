@@ -16,7 +16,7 @@ import { ProgressBar } from '@/components/progress-bar'
 import { useSession } from '@/components/session-provider'
 import {
   subjects,
-  subjectProgress,
+  getStudentProgress,
   getActivitiesForSubject,
   getCourseStudents,
   courses,
@@ -36,18 +36,11 @@ export default function DashboardPage() {
   const course = courses.find((c) => c.id === student.courseId)
   const english = subjects[0]
 
-  const progress = subjectProgress[student.id]?.[0] ?? {
-    subjectId: english.id,
-    progressPct: 0,
-    level,
-    activitiesTotal: getActivitiesForSubject(english.id).length,
-    activitiesCompleted: 0,
-    xpEarned: student.xp,
-  }
+  const progress = getStudentProgress(student)
 
   const classRanking = getCourseStudents(student.courseId)
   const myRank = classRanking.findIndex((s) => s.id === student.id) + 1
-  const dailyChallenge = getActivitiesForSubject(english.id)[3]
+  const dailyChallenge = getActivitiesForSubject(english.id, student.grade)[3]
 
   return (
     <AppShell>

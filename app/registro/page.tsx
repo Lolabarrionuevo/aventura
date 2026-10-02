@@ -5,8 +5,10 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { GraduationCap, Users, UserPlus } from 'lucide-react'
 import { AuthShell } from '@/components/auth/auth-shell'
-import { useSession } from '@/components/session-provider'
-import { students } from '@/lib/adventure/data'
+import { useAuthActions } from '@/components/session-provider'
+import { GRADES, courseIdForGrade, isUsernameTaken } from '@/lib/adventure/data'
+import { saveTeacher } from '@/lib/adventure/storage'
+import type { Student } from '@/lib/adventure/types'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
 
@@ -14,40 +16,61 @@ type Role = 'alumno' | 'profesor'
 
 export default function RegistroPage() {
   const router = useRouter()
-  const { setStudent } = useSession()
+  const { setStudent, logout } = useAuthActions()
   const [role, setRole] = useState<Role>('alumno')
   const [name, setName] = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [grade, setGrade] = useState('')
   const [error, setError] = useState('')
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
-    if (!name || !username || !password) {
+    const cleanUsername = username.trim().toLowerCase()
+    const gradeNumber = Number(grade)
+    if (!name.trim() || !cleanUsername || !password || !(GRADES as readonly number[]).includes(gradeNumber)) {
       setError('Completa todos los campos para crear tu cuenta.')
       return
     }
+    if (isUsernameTaken(cleanUsername)) {
+      setError('Ese usuario ya existe. Elige otro.')
+      return
+    }
+
+    const id = `${role === 'alumno' ? 'st' : 't'}-${Date.now()}`
+    const courseId = courseIdForGrade(gradeNumber)
 
     if (role === 'alumno') {
-      // Demo: creamos un alumno nuevo en memoria y arrancamos su aventura.
-      const newStudent = {
-        id: `st-${Date.now()}`,
-        name,
-        username: username.toLowerCase(),
-        role: 'alumno' as const,
+      const newStudent: Student = {
+        id,
+        name: name.trim(),
+        username: cleanUsername,
+        role: 'alumno',
         avatar: '',
-        courseId: 'c-4a',
+        grade: gradeNumber,
+        courseId,
         level: 1,
         xp: 0,
         streakDays: 0,
         badgeIds: [],
+        completedActivityIds: [],
       }
-      students.push(newStudent)
       setStudent(newStudent)
       router.push('/dashboard')
       return
     }
+
+    saveTeacher({
+      id,
+      name: name.trim(),
+      username: cleanUsername,
+      role: 'profesor',
+      avatar: '',
+      grade: gradeNumber,
+      courseIds: [courseId],
+    })
+    logout()
     router.push('/profesor')
   }
 
@@ -79,6 +102,23 @@ export default function RegistroPage() {
             autoComplete="username"
             className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base outline-none transition-colors focus:border-ring focus:ring-3 focus:ring-ring/40"
           />
+        </Field>
+
+        <Field label="Grado">
+          <select
+            value={grade}
+            onChange={(e) => setGrade(e.target.value)}
+            className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base outline-none transition-colors focus:border-ring focus:ring-3 focus:ring-ring/40"
+          >
+            <option value="" disabled>
+              Selecciona un grado
+            </option>
+            {GRADES.map((g) => (
+              <option key={g} value={g}>
+                {g}° grado
+              </option>
+            ))}
+          </select>
         </Field>
 
         <Field label="Contraseña">
