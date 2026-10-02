@@ -18,7 +18,7 @@ import type { Activity } from '@/lib/adventure/types'
 
 export function GamePlayer({ activity }: { activity: Activity }) {
   const router = useRouter()
-  const { student, setStudent } = useSession()
+  const { rewardActivity } = useSession()
 
   const [index, setIndex] = useState(0)
   const [correctCount, setCorrectCount] = useState(0)
@@ -62,9 +62,8 @@ export function GamePlayer({ activity }: { activity: Activity }) {
       timeLimitSec: activity.timeLimitSec,
       baseXpReward: activity.xpReward,
     })
-    // Otorga XP al alumno en la sesión (demo). Con Neon esto persistiría.
-    setStudent({ ...student, xp: student.xp + xpEarned })
-    setResult({ score, xpEarned, timeSec })
+    const xpAwarded = rewardActivity(activity.id, xpEarned)
+    setResult({ score, xpEarned: xpAwarded, timeSec })
     setDone(true)
   }
 

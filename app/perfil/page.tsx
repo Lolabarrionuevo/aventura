@@ -6,16 +6,17 @@ import { AppShell } from '@/components/app-shell'
 import { Avatar } from '@/components/avatar'
 import { ProgressBar } from '@/components/progress-bar'
 import { useSession } from '@/components/session-provider'
-import { courses, getBadge, subjectProgress } from '@/lib/adventure/data'
+import { courses, getBadge, getStudentProgress } from '@/lib/adventure/data'
 import { levelFromXp, levelProgressPct, xpToNextLevel } from '@/lib/adventure/gamification'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
 
 export default function PerfilPage() {
-  const { student } = useSession()
+  const { student, logout } = useSession()
   const level = levelFromXp(student.xp)
   const course = courses.find((c) => c.id === student.courseId)
-  const progress = subjectProgress[student.id]?.[0]
+  const progress = getStudentProgress(student)
+  const hasProgress = progress.activitiesCompleted > 0
 
   return (
     <AppShell>
@@ -63,7 +64,7 @@ export default function PerfilPage() {
           <h2 className="mb-4 font-display text-lg font-extrabold text-card-foreground">
             Rendimiento en Inglés
           </h2>
-          {progress ? (
+          {hasProgress ? (
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-3 rounded-2xl bg-success/10 p-3">
                 <TrendingUp className="size-5 text-success" />
@@ -126,8 +127,9 @@ export default function PerfilPage() {
 
       {/* Cerrar sesión */}
       <div className="mt-6 flex justify-center">
-        <Link
-          href="/"
+        <button
+          type="button"
+          onClick={() => logout('/')}
           className={cn(
             buttonVariants({ variant: 'outline' }),
             'h-11 rounded-xl px-6 font-bold',
@@ -135,7 +137,7 @@ export default function PerfilPage() {
         >
           <LogOut className="size-4" />
           Cerrar sesión
-        </Link>
+        </button>
       </div>
     </AppShell>
   )

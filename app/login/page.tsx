@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { GraduationCap, Users, Eye, EyeOff, LogIn } from 'lucide-react'
 import { AuthShell } from '@/components/auth/auth-shell'
-import { useSession } from '@/components/session-provider'
+import { useAuthActions } from '@/components/session-provider'
 import { getStudentByUsername, getTeacherByUsername } from '@/lib/adventure/data'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
@@ -14,7 +14,7 @@ type Role = 'alumno' | 'profesor'
 
 export default function LoginPage() {
   const router = useRouter()
-  const { setStudent } = useSession()
+  const { setStudent, logout } = useAuthActions()
   const [role, setRole] = useState<Role>('alumno')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -46,6 +46,7 @@ export default function LoginPage() {
       setError('No encontramos ese profesor. Prueba con "laura".')
       return
     }
+    logout()
     router.push('/profesor')
   }
 

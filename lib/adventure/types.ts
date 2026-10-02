@@ -14,15 +14,20 @@ export interface User {
 
 export interface Student extends User {
   role: 'alumno'
+  /** Grado escolar (1 a 6) elegido en el registro. */
+  grade: number
   courseId: string
   level: number
   xp: number
   streakDays: number
   badgeIds: string[]
+  /** Actividades cuya recompensa de XP ya fue otorgada. */
+  completedActivityIds: string[]
 }
 
 export interface Teacher extends User {
   role: 'profesor'
+  grade?: number
   courseIds: string[]
 }
 
@@ -30,6 +35,7 @@ export interface Course {
   id: string
   name: string
   grade: string
+  gradeLevel: number
   teacherId: string
   color: string
 }
