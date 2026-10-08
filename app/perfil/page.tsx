@@ -1,17 +1,19 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Zap, Flame, Crown, Medal, LogOut, TrendingUp, TrendingDown } from 'lucide-react'
 import { AppShell } from '@/components/app-shell'
 import { Avatar } from '@/components/avatar'
 import { ProgressBar } from '@/components/progress-bar'
-import { useSession } from '@/components/session-provider'
+import { clearSession, useSession } from '@/components/session-provider'
 import { courses, getBadge, subjectProgress } from '@/lib/adventure/data'
 import { levelFromXp, levelProgressPct, xpToNextLevel } from '@/lib/adventure/gamification'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
 
 export default function PerfilPage() {
+  const router = useRouter()
   const { student } = useSession()
   const level = levelFromXp(student.xp)
   const course = courses.find((c) => c.id === student.courseId)
@@ -126,8 +128,12 @@ export default function PerfilPage() {
 
       {/* Cerrar sesión */}
       <div className="mt-6 flex justify-center">
-        <Link
-          href="/"
+        <button
+          type="button"
+          onClick={() => {
+            clearSession()
+            router.push('/')
+          }}
           className={cn(
             buttonVariants({ variant: 'outline' }),
             'h-11 rounded-xl px-6 font-bold',
@@ -135,7 +141,7 @@ export default function PerfilPage() {
         >
           <LogOut className="size-4" />
           Cerrar sesión
-        </Link>
+        </button>
       </div>
     </AppShell>
   )

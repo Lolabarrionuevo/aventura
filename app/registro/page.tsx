@@ -49,7 +49,6 @@ export default function RegistroPage() {
         streakDays: 0,
         badgeIds: [],
       }
-      students.push(newStudent)
       setStudent(newStudent)
       router.push('/dashboard')
       return

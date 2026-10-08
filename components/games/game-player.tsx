@@ -35,6 +35,7 @@ export function GamePlayer({ activity }: { activity: Activity }) {
   const [lastCorrect, setLastCorrect] = useState(false)
 
   const startRef = useRef(Date.now())
+  const finishedRef = useRef(false)
   const total = activity.questions.length
   const question = activity.questions[index]
 
@@ -54,6 +55,8 @@ export function GamePlayer({ activity }: { activity: Activity }) {
   }, [timeLeft, isTimed, done])
 
   function finish(finalCorrect: number) {
+    if (finishedRef.current) return
+    finishedRef.current = true
     const timeSec = Math.round((Date.now() - startRef.current) / 1000)
     const { score, xpEarned } = scoreActivity({
       correctCount: finalCorrect,
@@ -62,9 +65,12 @@ export function GamePlayer({ activity }: { activity: Activity }) {
       timeLimitSec: activity.timeLimitSec,
       baseXpReward: activity.xpReward,
     })
-    // Otorga XP al alumno en la sesión (demo). Con Neon esto persistiría.
-    setStudent({ ...student, xp: student.xp + xpEarned })
-    setResult({ score, xpEarned, timeSec })
+    const rewardKey = `adventure-reward:${student.id}:${activity.id}`
+    const alreadyRewarded = localStorage.getItem(rewardKey) === '1'
+    const awardedXp = alreadyRewarded ? 0 : xpEarned
+    if (!alreadyRewarded) localStorage.setItem(rewardKey, '1')
+    setStudent({ ...student, xp: student.xp + awardedXp })
+    setResult({ score, xpEarned: awardedXp, timeSec })
     setDone(true)
   }
 

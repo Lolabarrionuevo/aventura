@@ -22,8 +22,8 @@ const DIFFICULTY_STYLE: Record<string, string> = {
 export default function MateriasPage() {
   const { student } = useSession()
   const english = subjects[0]
-  const subjectActivities = getActivitiesForSubject(english.id)
-  const gradeActivities = getActivitiesForGrade(student.grade)
+  const subjectActivities = getActivitiesForGrade(student.grade)
+  const gradeActivities = subjectActivities
   const teacherActivities = gradeActivities.filter(
     (a) => a.createdByTeacher && !subjectActivities.some((sa) => sa.id === a.id),
   )
