@@ -23,6 +23,7 @@ export function GamePlayer({ activity }: { activity: Activity }) {
   const [index, setIndex] = useState(0)
   const [correctCount, setCorrectCount] = useState(0)
   const [done, setDone] = useState(false)
+  const [celebrate, setCelebrate] = useState(false)
   const [result, setResult] = useState<{ score: number; xpEarned: number; timeSec: number } | null>(
     null,
   )
@@ -35,6 +36,7 @@ export function GamePlayer({ activity }: { activity: Activity }) {
   const [lastCorrect, setLastCorrect] = useState(false)
 
   const startRef = useRef(Date.now())
+  const finishedRef = useRef(false)
   const total = activity.questions.length
   const question = activity.questions[index]
 
@@ -54,6 +56,8 @@ export function GamePlayer({ activity }: { activity: Activity }) {
   }, [timeLeft, isTimed, done])
 
   function finish(finalCorrect: number) {
+    if (finishedRef.current) return
+    finishedRef.current = true
     const timeSec = Math.round((Date.now() - startRef.current) / 1000)
     const { score, xpEarned } = scoreActivity({
       correctCount: finalCorrect,
@@ -62,9 +66,13 @@ export function GamePlayer({ activity }: { activity: Activity }) {
       timeLimitSec: activity.timeLimitSec,
       baseXpReward: activity.xpReward,
     })
-    // Otorga XP al alumno en la sesión (demo). Con Neon esto persistiría.
-    setStudent({ ...student, xp: student.xp + xpEarned })
-    setResult({ score, xpEarned, timeSec })
+    const rewardKey = `adventure-reward:${student.id}:${activity.id}`
+    const alreadyRewarded = localStorage.getItem(rewardKey) === '1'
+    const awardedXp = alreadyRewarded ? 0 : xpEarned
+    if (!alreadyRewarded) localStorage.setItem(rewardKey, '1')
+    if (!alreadyRewarded && finalCorrect === total) setCelebrate(true)
+    setStudent({ ...student, xp: student.xp + awardedXp })
+    setResult({ score, xpEarned: awardedXp, timeSec })
     setDone(true)
   }
 
@@ -135,6 +143,21 @@ export function GamePlayer({ activity }: { activity: Activity }) {
 
   return (
     <main className="min-h-screen bg-background">
+      {celebrate && (
+        <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden" aria-live="polite">
+          <div className="absolute left-1/2 top-1/3 -translate-x-1/2 rounded-2xl bg-background/95 px-6 py-4 text-center shadow-xl">
+            <p className="font-display text-2xl font-extrabold text-primary">{'🎉 ¡Lo lograste!'}</p>
+            <p className="mt-1 font-bold text-muted-foreground">+{activity.xpReward} XP</p>
+          </div>
+          {Array.from({ length: 32 }, (_, i) => (
+            <span
+              key={i}
+              className="absolute top-0 h-3 w-2 animate-[confetti-fall_2.5s_ease-in_forwards] rounded-sm"
+              style={{ left: `${(i * 31) % 100}%`, backgroundColor: ['#f97316', '#22c55e', '#3b82f6', '#eab308'][i % 4], animationDelay: `${(i % 8) * 80}ms` }}
+            />
+          ))}
+        </div>
+      )}
       {/* Barra superior con progreso */}
       <header className="sticky top-0 z-10 border-b border-border bg-background">
         <div className="mx-auto flex max-w-3xl items-center gap-4 px-4 py-4">

@@ -22,7 +22,7 @@ export const badges: Badge[] = [
 ]
 
 export const courses: Course[] = [
-  { id: 'c-4a', name: '4° Grado A', grade: 'Primaria', teacherId: 't-1', color: 'primary' },
+  { id: 'c-4a', name: 'Primaria', grade: 'Primaria', teacherId: 't-1', color: 'primary' },
 ]
 
 export const subjects: Subject[] = [
@@ -578,7 +578,12 @@ export const studentAnalyses: Record<string, StudentAnalysis> = {
 
 // Helpers de acceso (sustituibles por consultas reales a la base de datos).
 export function getStudentByUsername(username: string): Student | undefined {
-  return students.find((s) => s.username === username.toLowerCase())
+  const normalized = username.trim().toLowerCase()
+  const stored = typeof window !== 'undefined'
+    ? (JSON.parse(localStorage.getItem('adventure-users') ?? '[]') as Student[])
+    : []
+  const allStudents = [...students, ...stored.filter((user) => !students.some((item) => item.id === user.id))]
+  return allStudents.find((s) => s.username === normalized)
 }
 
 export function getTeacherByUsername(username: string): Teacher | undefined {
@@ -623,7 +628,29 @@ export const GRADE_LABELS: Record<Grade, string> = {
 export const GRADE_OPTIONS: Grade[] = ['1', '2', '3', '4', '5', '6']
 
 export function getActivitiesForGrade(grade: Grade): Activity[] {
-  return activities.filter((a) => a.grade === grade)
+  const baseDifficulty = grade === '1' || grade === '2' ? 'facil' : grade === '3' || grade === '4' ? 'medio' : 'dificil'
+  const isEarlyGrade = grade === '1' || grade === '2'
+  const isAdvancedGrade = grade === '5' || grade === '6'
+
+  return activities
+    .filter((activity) => !isEarlyGrade || activity.difficulty !== 'dificil')
+    .map((activity) => ({
+      ...activity,
+      grade,
+      difficulty: baseDifficulty,
+      description: isEarlyGrade
+        ? `${activity.description} Palabras cortas y apoyo visual.`
+        : isAdvancedGrade
+          ? `${activity.description} Incluye comprensión y razonamiento avanzado.`
+          : activity.description,
+      questions: isEarlyGrade
+        ? activity.questions.slice(0, Math.max(1, Math.ceil(activity.questions.length / 2)))
+        : activity.questions,
+    }))
+}
+
+export function getActivityForGrade(id: string, grade: Grade): Activity | undefined {
+  return getActivitiesForGrade(grade).find((activity) => activity.id === id)
 }
 
 export function addActivity(activity: Activity): void {
