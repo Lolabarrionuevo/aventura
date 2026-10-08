@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { X, ArrowRight, Timer } from 'lucide-react'
-import { ActivityTutor } from './activity-tutor'
 import { cn } from '@/lib/utils'
 import { ProgressBar } from '@/components/progress-bar'
 import { useSession } from '@/components/session-provider'
@@ -159,7 +158,6 @@ export function GamePlayer({ activity }: { activity: Activity }) {
           ))}
         </div>
       )}
-      <ActivityTutor activity={activity} question={question} grade={student.grade} />
       {/* Barra superior con progreso */}
       <header className="sticky top-0 z-10 border-b border-border bg-background">
         <div className="mx-auto flex max-w-3xl items-center gap-4 px-4 py-4">
