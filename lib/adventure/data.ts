@@ -22,7 +22,7 @@ export const badges: Badge[] = [
 ]
 
 export const courses: Course[] = [
-  { id: 'c-4a', name: '4° Grado A', grade: 'Primaria', teacherId: 't-1', color: 'primary' },
+  { id: 'c-4a', name: 'Primaria', grade: 'Primaria', teacherId: 't-1', color: 'primary' },
 ]
 
 export const subjects: Subject[] = [
@@ -632,17 +632,25 @@ export function getActivitiesForGrade(grade: Grade): Activity[] {
   const isEarlyGrade = grade === '1' || grade === '2'
   const isAdvancedGrade = grade === '5' || grade === '6'
 
-  return activities.map((activity) => ({
-    ...activity,
-    grade,
-    difficulty: baseDifficulty,
-    description: isEarlyGrade
-      ? `${activity.description} Palabras cortas y apoyo visual.`
-      : isAdvancedGrade
-        ? `${activity.description} Incluye comprensión y razonamiento avanzado.`
-        : activity.description,
-    questions: isEarlyGrade ? activity.questions.slice(0, Math.max(1, Math.ceil(activity.questions.length / 2))) : activity.questions,
-  }))
+  return activities
+    .filter((activity) => !isEarlyGrade || activity.difficulty !== 'dificil')
+    .map((activity) => ({
+      ...activity,
+      grade,
+      difficulty: baseDifficulty,
+      description: isEarlyGrade
+        ? `${activity.description} Palabras cortas y apoyo visual.`
+        : isAdvancedGrade
+          ? `${activity.description} Incluye comprensión y razonamiento avanzado.`
+          : activity.description,
+      questions: isEarlyGrade
+        ? activity.questions.slice(0, Math.max(1, Math.ceil(activity.questions.length / 2)))
+        : activity.questions,
+    }))
+}
+
+export function getActivityForGrade(id: string, grade: Grade): Activity | undefined {
+  return getActivitiesForGrade(grade).find((activity) => activity.id === id)
 }
 
 export function addActivity(activity: Activity): void {
