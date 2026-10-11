@@ -16,13 +16,13 @@ import { ProgressBar } from '@/components/progress-bar'
 import { useSession } from '@/components/session-provider'
 import {
   subjects,
-  subjectProgress,
   getActivitiesForSubject,
   getCourseStudents,
   getBadge,
   GRADE_LABELS,
 } from '@/lib/adventure/data'
 import {
+  getStudentSubjectProgress,
   levelFromXp,
   levelProgressPct,
   xpToNextLevel,
@@ -35,14 +35,7 @@ export default function DashboardPage() {
   const level = levelFromXp(student.xp)
   const english = subjects[0]
 
-  const progress = subjectProgress[student.id]?.[0] ?? {
-    subjectId: english.id,
-    progressPct: 0,
-    level,
-    activitiesTotal: getActivitiesForSubject(english.id).length,
-    activitiesCompleted: 0,
-    xpEarned: student.xp,
-  }
+  const progress = getStudentSubjectProgress(student, english.id)
 
   const classRanking = getCourseStudents(student.courseId)
   const myRank = classRanking.findIndex((s) => s.id === student.id) + 1

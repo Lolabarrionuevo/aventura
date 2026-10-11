@@ -13,8 +13,15 @@ import { OrderQuestion } from './order-question'
 import { MatchQuestion } from './match-question'
 import { MemoryQuestion } from './memory-question'
 import { ActivityResultScreen } from './activity-result'
-import { scoreActivity } from '@/lib/adventure/gamification'
-import type { Activity } from '@/lib/adventure/types'
+import {
+  argentinaDateKey,
+  isActivityCompletedToday,
+  newlyUnlockedBadges,
+  recordActivityCompletion,
+  scoreActivity,
+} from '@/lib/adventure/gamification'
+import { getBadge } from '@/lib/adventure/data'
+import type { Activity, ActivityResult } from '@/lib/adventure/types'
 
 export function GamePlayer({ activity }: { activity: Activity }) {
   const router = useRouter()
@@ -24,6 +31,8 @@ export function GamePlayer({ activity }: { activity: Activity }) {
   const [correctCount, setCorrectCount] = useState(0)
   const [done, setDone] = useState(false)
   const [celebrate, setCelebrate] = useState(false)
+  const [unlockedBadges, setUnlockedBadges] = useState<string[]>([])
+  const [lockedToday] = useState(() => isActivityCompletedToday(student.id, activity.id))
   const [result, setResult] = useState<{ score: number; xpEarned: number; timeSec: number } | null>(
     null,
   )
@@ -56,7 +65,7 @@ export function GamePlayer({ activity }: { activity: Activity }) {
   }, [timeLeft, isTimed, done])
 
   function finish(finalCorrect: number) {
-    if (finishedRef.current) return
+    if (finishedRef.current || lockedToday) return
     finishedRef.current = true
     const timeSec = Math.round((Date.now() - startRef.current) / 1000)
     const { score, xpEarned } = scoreActivity({
@@ -66,12 +75,30 @@ export function GamePlayer({ activity }: { activity: Activity }) {
       timeLimitSec: activity.timeLimitSec,
       baseXpReward: activity.xpReward,
     })
-    const rewardKey = `adventure-reward:${student.id}:${activity.id}`
-    const alreadyRewarded = localStorage.getItem(rewardKey) === '1'
-    const awardedXp = alreadyRewarded ? 0 : xpEarned
-    if (!alreadyRewarded) localStorage.setItem(rewardKey, '1')
-    if (!alreadyRewarded && finalCorrect === total) setCelebrate(true)
-    setStudent({ ...student, xp: student.xp + awardedXp })
+    const activityResult: ActivityResult = {
+      id: `${student.id}:${activity.id}`,
+      studentId: student.id,
+      activityId: activity.id,
+      correctCount: finalCorrect,
+      totalCount: total,
+      timeSec,
+      score,
+      xpEarned,
+      date: argentinaDateKey(),
+    }
+    const firstCompletion = recordActivityCompletion(activityResult)
+    const awardedXp = firstCompletion ? xpEarned : 0
+    const badges = firstCompletion ? newlyUnlockedBadges(student, activityResult, activity) : []
+    const nextStudent = {
+      ...student,
+      xp: student.xp + awardedXp,
+      badgeIds: [...new Set([...student.badgeIds, ...badges.map((badge) => badge.id)])],
+    }
+    if (badges.length > 0) {
+      setUnlockedBadges(badges.map((badge) => badge.id))
+      setCelebrate(true)
+    }
+    setStudent(nextStudent)
     setResult({ score, xpEarned: awardedXp, timeSec })
     setDone(true)
   }
@@ -127,6 +154,19 @@ export function GamePlayer({ activity }: { activity: Activity }) {
     setLastCorrect(false)
   }
 
+  if (lockedToday) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-background px-4">
+        <div className="w-full max-w-md rounded-3xl border border-border bg-card p-8 text-center">
+          <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Actividad diaria</p>
+          <h1 className="mt-4 font-display text-2xl font-extrabold text-card-foreground">Juego bloqueado por hoy</h1>
+          <p className="mt-2 text-muted-foreground">¡Ya completaste este juego hoy! Podrás volver a jugar mañana.</p>
+          <Link href="/materias" className="mt-6 inline-flex h-11 items-center justify-center rounded-xl bg-primary px-5 font-extrabold text-primary-foreground">Volver a actividades</Link>
+        </div>
+      </main>
+    )
+  }
+
   if (done && result) {
     return (
       <ActivityResultScreen
@@ -147,7 +187,12 @@ export function GamePlayer({ activity }: { activity: Activity }) {
         <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden" aria-live="polite">
           <div className="absolute left-1/2 top-1/3 -translate-x-1/2 rounded-2xl bg-background/95 px-6 py-4 text-center shadow-xl">
             <p className="font-display text-2xl font-extrabold text-primary">{'🎉 ¡Lo lograste!'}</p>
-            <p className="mt-1 font-bold text-muted-foreground">+{activity.xpReward} XP</p>
+            <p className="mt-1 font-bold text-muted-foreground">+{result?.xpEarned ?? activity.xpReward} XP</p>
+            {unlockedBadges.length > 0 && (
+              <p className="mt-2 font-bold text-accent">
+                Medalla desbloqueada: {unlockedBadges.map((id) => getBadge(id)?.name).filter(Boolean).join(', ')}
+              </p>
+            )}
           </div>
           {Array.from({ length: 32 }, (_, i) => (
             <span

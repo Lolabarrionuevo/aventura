@@ -5,8 +5,10 @@ import { Zap, ChevronRight } from 'lucide-react'
 import { AppShell } from '@/components/app-shell'
 import { ProgressBar } from '@/components/progress-bar'
 import { useSession } from '@/components/session-provider'
-import { subjects, subjectProgress, getActivitiesForSubject, getActivitiesForGrade } from '@/lib/adventure/data'
+import { subjects, getActivitiesForGrade } from '@/lib/adventure/data'
 import {
+  getStudentSubjectProgress,
+  isActivityCompletedToday,
   GAME_TYPE_META,
   difficultyLabel,
   levelFromXp,
@@ -28,8 +30,8 @@ export default function MateriasPage() {
     (a) => a.createdByTeacher && !subjectActivities.some((sa) => sa.id === a.id),
   )
   const activities = [...subjectActivities, ...teacherActivities]
-  const progress = subjectProgress[student.id]?.[0]
-  const progressPct = progress?.progressPct ?? 0
+  const progress = getStudentSubjectProgress(student, english.id)
+  const progressPct = progress.progressPct
 
   return (
     <AppShell>
@@ -62,6 +64,7 @@ export default function MateriasPage() {
       <div className="grid gap-4 md:grid-cols-2">
         {activities.map((activity) => {
           const meta = GAME_TYPE_META[activity.type]
+          const completedToday = isActivityCompletedToday(student.id, activity.id)
           return (
             <Link
               key={activity.id}
@@ -79,6 +82,7 @@ export default function MateriasPage() {
                 </div>
                 <p className="truncate text-sm text-muted-foreground">{meta.label}</p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
+                  {completedToday && <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-bold text-muted-foreground">Completado hoy</span>}
                   <span
                     className={cn(
                       'rounded-full px-2.5 py-0.5 text-xs font-bold',
