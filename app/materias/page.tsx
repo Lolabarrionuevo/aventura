@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { Zap, ChevronRight } from 'lucide-react'
 import { AppShell } from '@/components/app-shell'
-import { ProgressBar } from '@/components/progress-bar'
 import { useSession } from '@/components/session-provider'
 import { subjects, subjectProgress, getActivitiesForSubject, getActivitiesForGrade } from '@/lib/adventure/data'
 import {
@@ -29,7 +28,6 @@ export default function MateriasPage() {
   )
   const activities = [...subjectActivities, ...teacherActivities]
   const progress = subjectProgress[student.id]?.[0]
-  const progressPct = progress?.progressPct ?? 0
 
   return (
     <AppShell>
@@ -47,13 +45,6 @@ export default function MateriasPage() {
               Nivel {progress?.level ?? levelFromXp(student.xp)} · {activities.length} actividades
             </p>
           </div>
-        </div>
-        <div className="w-full sm:w-56">
-          <div className="mb-1 flex items-center justify-between text-sm font-bold">
-            <span className="text-muted-foreground">Progreso</span>
-            <span className="text-foreground">{progressPct}%</span>
-          </div>
-          <ProgressBar value={progressPct} label="Progreso de inglés" />
         </div>
       </section>
 

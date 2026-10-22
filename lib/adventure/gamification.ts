@@ -43,6 +43,34 @@ export function scoreActivity(params: {
   return { score, xpEarned }
 }
 
+import type { Badge, Student } from './types'
+import { badges, getActivitiesForGrade } from './data'
+import { getCompletions } from './progress'
+
+export function newlyEarnedBadges(student: Student, activityId: string, score: number): Badge[] {
+  const completions = getCompletions(student.id)
+  const earned = new Set(student.badgeIds)
+  const completedCount = new Set(completions.map((item) => item.activityId)).size
+  const conditions: Record<string, boolean> = {
+    'b-first': completedCount >= 1,
+    'b-streak3': student.streakDays >= 3,
+    'b-streak7': student.streakDays >= 7,
+    'b-perfect': score === 100,
+    'b-words50': completedCount >= 50,
+    'b-speed': activityId === 'a-8',
+    'b-level5': levelFromXp(student.xp) >= 5,
+    'b-champion': false,
+  }
+  return badges.filter((badge) => conditions[badge.id] && !earned.has(badge.id))
+}
+
+export function activityProgress(studentId: string, grade: Student['grade']): { completed: number; total: number; pct: number } {
+  const completions = getCompletions(studentId)
+  const completed = new Set(completions.map((item) => item.activityId)).size
+  const total = getActivitiesForGrade(grade).length
+  return { completed, total, pct: total ? Math.round((completed / total) * 100) : 0 }
+}
+
 export function difficultyLabel(d: 'facil' | 'medio' | 'dificil'): string {
   return { facil: 'Fácil', medio: 'Medio', dificil: 'Difícil' }[d]
 }

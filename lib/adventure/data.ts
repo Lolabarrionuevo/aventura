@@ -122,6 +122,114 @@ export const subjectProgress: Record<string, SubjectProgress[]> = {
   ],
 }
 
+const gradeThreeActivities: Activity[] = [
+  {
+    id: 'g3-school-subjects',
+    title: 'School Subjects: Look and Choose',
+    description: 'Understand what happens in each class.',
+    type: 'multiple-choice',
+    difficulty: 'medio',
+    subjectId: 's-english',
+    grade: '3',
+    xpReward: 60,
+    questions: [
+      { id: 'q1', prompt: 'You are painting a picture. Which class are you in?', options: ['Art', 'Math', 'Science'], answerIndex: 0, hint: 'Think about colors and pictures.' },
+      { id: 'q2', prompt: 'You are counting numbers. Which class are you in?', options: ['English', 'Math', 'Art'], answerIndex: 1, hint: 'You use numbers in this class.' },
+      { id: 'q3', prompt: 'You are learning about plants. Which class are you in?', options: ['Science', 'Music', 'Math'], answerIndex: 0, hint: 'You explore the world in this class.' },
+    ],
+  },
+  {
+    id: 'g3-sports',
+    title: 'Sports: Can and Can’t',
+    description: 'Read a short situation and find the action.',
+    type: 'multiple-choice',
+    difficulty: 'medio',
+    subjectId: 's-english',
+    grade: '3',
+    xpReward: 65,
+    questions: [
+      { id: 'q1', prompt: 'Look at the sports scene. What is the girl in the pool doing?', image: '/games/sports-scene.png', options: ['Swimming', 'Skiing', 'Playing chess'], answerIndex: 0 },
+      { id: 'q2', prompt: 'Look at the sports scene. What is the boy doing?', image: '/games/sports-scene.png', options: ['Running a race', 'Playing football', 'Riding a bike'], answerIndex: 1 },
+      { id: 'q3', prompt: 'Look at the sports scene. What is the girl on the right doing?', image: '/games/sports-scene.png', options: ['Riding a bike', 'Swimming', 'Playing football'], answerIndex: 0 },
+    ],
+  },
+  {
+    id: 'g3-animals',
+    title: 'Animals: Where and What',
+    description: 'Use a scene to understand place and ability.',
+    type: 'image-question',
+    difficulty: 'medio',
+    subjectId: 's-english',
+    grade: '3',
+    xpReward: 70,
+    questions: [
+      { id: 'q1', prompt: 'Look at the scene. Where is the cat?', image: '/games/animals-scene.png', options: ['Under the table', 'On the table', 'Next to the table'], answerIndex: 1, hint: 'Look carefully at the picture.' },
+      { id: 'q2', prompt: 'Look at the scene. Which animal is flying?', image: '/games/animals-scene.png', options: ['A bird', 'A dog', 'A cat'], answerIndex: 0, hint: 'Look near the window.' },
+      { id: 'q3', prompt: 'Look at the scene. Where is the dog?', image: '/games/animals-scene.png', options: ['Next to the table', 'Under the table', 'On the table'], answerIndex: 0 },
+    ],
+  },
+  {
+    id: 'g3-clothes',
+    title: 'Clothes: Look at Mia',
+    description: 'Observe a character and understand what she is wearing.',
+    type: 'multiple-choice',
+    difficulty: 'medio',
+    subjectId: 's-english',
+    grade: '3',
+    xpReward: 60,
+    questions: [
+      { id: 'q1', prompt: 'Look at Mia. What is she wearing?', image: '/games/mia-clothes.png', options: ['A skirt', 'Shorts', 'A hat'], answerIndex: 0 },
+      { id: 'q2', prompt: 'Look at Mia. Which item is part of her outfit?', image: '/games/mia-clothes.png', options: ['A jacket', 'A swimsuit', 'A helmet'], answerIndex: 0 },
+      { id: 'q3', prompt: 'Look at Mia. Which sentence is correct?', image: '/games/mia-clothes.png', options: ['She is wearing a jacket.', 'She is wearing shorts.', 'He is wearing a jacket.'], answerIndex: 0 },
+    ],
+  },
+  {
+    id: 'g3-food',
+    title: 'Food: Likes and Dislikes',
+    description: 'Read what each character likes and choose the food.',
+    type: 'image-question',
+    difficulty: 'medio',
+    subjectId: 's-english',
+    grade: '3',
+    xpReward: 65,
+    questions: [
+      { id: 'q1', prompt: 'Look at the food scene. Which food can you see?', image: '/games/food-scene.png', options: ['A burger', 'A shoe', 'A pencil'], answerIndex: 0 },
+      { id: 'q2', prompt: 'Look at the food scene. Which fruit can you see?', image: '/games/food-scene.png', options: ['An apple', 'A carrot', 'A sandwich'], answerIndex: 0 },
+      { id: 'q3', prompt: 'Look at the food scene. Which dish is in a bowl?', image: '/games/food-scene.png', options: ['Soup', 'Pizza', 'A burger'], answerIndex: 0 },
+    ],
+  },
+  {
+    id: 'g3-body',
+    title: 'The Monster: Has Got',
+    description: 'Look closely and choose the sentence that describes the monster.',
+    type: 'true-false',
+    difficulty: 'medio',
+    subjectId: 's-english',
+    grade: '3',
+    xpReward: 70,
+    questions: [
+      { id: 'q1', prompt: 'Look at the monster. It has got three eyes.', image: '/games/monster.png', options: ['True', 'False'], answerIndex: 0 },
+      { id: 'q2', prompt: 'Look at the monster. It has got six legs.', image: '/games/monster.png', options: ['True', 'False'], answerIndex: 0 },
+      { id: 'q3', prompt: 'Look at the monster. It has got one ear.', image: '/games/monster.png', options: ['True', 'False'], answerIndex: 1 },
+    ],
+  },
+  {
+    id: 'g3-beach',
+    title: 'At the Beach: What Do They Want?',
+    description: 'Read the beach scene and choose the sentence that fits.',
+    type: 'order-elements',
+    difficulty: 'medio',
+    subjectId: 's-english',
+    grade: '3',
+    xpReward: 75,
+    questions: [
+      { id: 'q1', prompt: 'I want to build a sandcastle.', sequence: ['I', 'want', 'to', 'build', 'a', 'sandcastle'] },
+      { id: 'q2', prompt: 'She doesn\'t want to swim.', sequence: ['She', 'doesn\'t', 'want', 'to', 'swim'] },
+      { id: 'q3', prompt: 'He wants to surf.', sequence: ['He', 'wants', 'to', 'surf'] },
+    ],
+  },
+]
+
 export const activities: Activity[] = [
   {
     id: 'a-1',
@@ -628,7 +736,9 @@ export const GRADE_LABELS: Record<Grade, string> = {
 export const GRADE_OPTIONS: Grade[] = ['1', '2', '3', '4', '5', '6']
 
 export function getActivitiesForGrade(grade: Grade): Activity[] {
-  const baseDifficulty = grade === '1' || grade === '2' ? 'facil' : grade === '3' || grade === '4' ? 'medio' : 'dificil'
+  if (grade === '3') return gradeThreeActivities
+
+  const baseDifficulty = grade === '1' || grade === '2' ? 'facil' : grade === '4' ? 'medio' : 'dificil'
   const isEarlyGrade = grade === '1' || grade === '2'
   const isAdvancedGrade = grade === '5' || grade === '6'
 

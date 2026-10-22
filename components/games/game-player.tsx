@@ -13,7 +13,8 @@ import { OrderQuestion } from './order-question'
 import { MatchQuestion } from './match-question'
 import { MemoryQuestion } from './memory-question'
 import { ActivityResultScreen } from './activity-result'
-import { scoreActivity } from '@/lib/adventure/gamification'
+import { newlyEarnedBadges, scoreActivity } from '@/lib/adventure/gamification'
+import { getTodayCompletion, recordCompletion } from '@/lib/adventure/progress'
 import type { Activity } from '@/lib/adventure/types'
 
 export function GamePlayer({ activity }: { activity: Activity }) {
@@ -24,9 +25,9 @@ export function GamePlayer({ activity }: { activity: Activity }) {
   const [correctCount, setCorrectCount] = useState(0)
   const [done, setDone] = useState(false)
   const [celebrate, setCelebrate] = useState(false)
-  const [result, setResult] = useState<{ score: number; xpEarned: number; timeSec: number } | null>(
-    null,
-  )
+  const [result, setResult] = useState<{ score: number; xpEarned: number; timeSec: number } | null>(null)
+  const [newBadges, setNewBadges] = useState<string[]>([])
+  const [todayCompleted] = useState(() => getTodayCompletion(student.id, activity.id))
 
   // Estado de la pregunta actual
   const [selected, setSelected] = useState<number | null>(null)
@@ -71,7 +72,26 @@ export function GamePlayer({ activity }: { activity: Activity }) {
     const awardedXp = alreadyRewarded ? 0 : xpEarned
     if (!alreadyRewarded) localStorage.setItem(rewardKey, '1')
     if (!alreadyRewarded && finalCorrect === total) setCelebrate(true)
-    setStudent({ ...student, xp: student.xp + awardedXp })
+    if (!alreadyRewarded) {
+      recordCompletion({
+        id: `${student.id}-${activity.id}-${Date.now()}`,
+        studentId: student.id,
+        activityId: activity.id,
+        correctCount: finalCorrect,
+        totalCount: total,
+        timeSec,
+        score,
+        xpEarned: awardedXp,
+        date: new Date().toISOString(),
+      })
+    }
+    const updatedStudent = { ...student, xp: student.xp + awardedXp }
+    const earnedNow = newlyEarnedBadges(updatedStudent, activity.id, score)
+    if (earnedNow.length > 0) {
+      updatedStudent.badgeIds = [...updatedStudent.badgeIds, ...earnedNow.map((badge) => badge.id)]
+      setNewBadges(earnedNow.map((badge) => badge.name))
+    }
+    setStudent(updatedStudent)
     setResult({ score, xpEarned: awardedXp, timeSec })
     setDone(true)
   }
@@ -127,6 +147,21 @@ export function GamePlayer({ activity }: { activity: Activity }) {
     setLastCorrect(false)
   }
 
+  if (todayCompleted && !done) {
+    return (
+      <ActivityResultScreen
+        activity={activity}
+        correctCount={todayCompleted.correctCount}
+        total={todayCompleted.totalCount}
+        score={todayCompleted.score}
+        xpEarned={0}
+        timeSec={todayCompleted.timeSec}
+        onRetry={() => window.location.reload()}
+        alreadyCompleted
+      />
+    )
+  }
+
   if (done && result) {
     return (
       <ActivityResultScreen
@@ -137,6 +172,7 @@ export function GamePlayer({ activity }: { activity: Activity }) {
         xpEarned={result.xpEarned}
         timeSec={result.timeSec}
         onRetry={() => window.location.reload()}
+        newBadges={newBadges}
       />
     )
   }
@@ -249,7 +285,13 @@ export function GamePlayer({ activity }: { activity: Activity }) {
                   lastCorrect ? 'text-success' : 'text-destructive',
                 )}
               >
-                {lastCorrect ? '¡Correcto! 🎉' : '¡Casi! Sigue intentando 💪'}
+                {lastCorrect
+                  ? activity.grade === '3'
+                    ? 'Correct! The sentence matches the situation.'
+                    : '¡Correcto! 🎉'
+                  : activity.grade === '3'
+                    ? 'Try again. Look at the clues and read the whole sentence.'
+                    : '¡Casi! Sigue intentando 💪'}
               </p>
             )}
           </div>
