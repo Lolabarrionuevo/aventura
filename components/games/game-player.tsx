@@ -285,7 +285,13 @@ export function GamePlayer({ activity }: { activity: Activity }) {
                   lastCorrect ? 'text-success' : 'text-destructive',
                 )}
               >
-                {lastCorrect ? '¡Correcto! 🎉' : '¡Casi! Sigue intentando 💪'}
+                {lastCorrect
+                  ? activity.grade === '3'
+                    ? 'Correct! The sentence matches the situation.'
+                    : '¡Correcto! 🎉'
+                  : activity.grade === '3'
+                    ? 'Try again. Look at the clues and read the whole sentence.'
+                    : '¡Casi! Sigue intentando 💪'}
               </p>
             )}
           </div>

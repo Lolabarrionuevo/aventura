@@ -122,6 +122,114 @@ export const subjectProgress: Record<string, SubjectProgress[]> = {
   ],
 }
 
+const gradeThreeActivities: Activity[] = [
+  {
+    id: 'g3-school-subjects',
+    title: 'School Subjects: Look and Choose',
+    description: 'Understand what happens in each class.',
+    type: 'multiple-choice',
+    difficulty: 'medio',
+    subjectId: 's-english',
+    grade: '3',
+    xpReward: 60,
+    questions: [
+      { id: 'q1', prompt: 'You are painting a picture. Which class are you in?', options: ['Art', 'Math', 'Science'], answerIndex: 0, hint: 'Think about colors and pictures.' },
+      { id: 'q2', prompt: 'You are counting numbers. Which class are you in?', options: ['English', 'Math', 'Art'], answerIndex: 1, hint: 'You use numbers in this class.' },
+      { id: 'q3', prompt: 'You are learning about plants. Which class are you in?', options: ['Science', 'Music', 'Math'], answerIndex: 0, hint: 'You explore the world in this class.' },
+    ],
+  },
+  {
+    id: 'g3-sports',
+    title: 'Sports: Can and Can’t',
+    description: 'Read a short situation and find the action.',
+    type: 'multiple-choice',
+    difficulty: 'medio',
+    subjectId: 's-english',
+    grade: '3',
+    xpReward: 65,
+    questions: [
+      { id: 'q1', prompt: 'Emma can swim, but she can\'t ride a skateboard. What can Emma do?', options: ['Swim', 'Ride a skateboard', 'Play chess'], answerIndex: 0 },
+      { id: 'q2', prompt: 'Leo can play football, but he can\'t ski. What can\'t Leo do?', options: ['Play football', 'Run', 'Ski'], answerIndex: 2 },
+      { id: 'q3', prompt: 'Mia can ride a bike. Which sentence is true?', options: ['Mia can ride a bike.', 'Mia can\'t ride a bike.', 'Mia can swim.'], answerIndex: 0 },
+    ],
+  },
+  {
+    id: 'g3-animals',
+    title: 'Animals: Where and What',
+    description: 'Use a scene to understand place and ability.',
+    type: 'image-question',
+    difficulty: 'medio',
+    subjectId: 's-english',
+    grade: '3',
+    xpReward: 70,
+    questions: [
+      { id: 'q1', prompt: 'Look at the cat. Where is the cat?', image: '/games/cat.png', options: ['Under the table', 'On the table', 'Next to the table'], answerIndex: 1, hint: 'Look carefully at the picture.' },
+      { id: 'q2', prompt: 'Which animal can fly?', image: '/games/cat.png', options: ['A bird', 'A dog', 'A cat'], answerIndex: 0, hint: 'Think about wings.' },
+      { id: 'q3', prompt: 'The dog is next to the table. Which sentence matches the scene?', image: '/games/cat.png', options: ['The dog is next to the table.', 'The dog is under the table.', 'The dog is on the table.'], answerIndex: 0 },
+    ],
+  },
+  {
+    id: 'g3-clothes',
+    title: 'Clothes: Look at Mia',
+    description: 'Observe a character and understand what she is wearing.',
+    type: 'multiple-choice',
+    difficulty: 'medio',
+    subjectId: 's-english',
+    grade: '3',
+    xpReward: 60,
+    questions: [
+      { id: 'q1', prompt: 'Look at Mia: she is wearing a skirt and a jacket. What is she wearing?', options: ['A skirt', 'Shorts', 'A hat'], answerIndex: 0 },
+      { id: 'q2', prompt: 'Ben is wearing shorts and a blue T-shirt. What is Ben wearing?', options: ['A dress', 'Shorts', 'A jacket'], answerIndex: 1 },
+      { id: 'q3', prompt: 'Mia is wearing a jacket. Which sentence is correct?', options: ['She is wearing a jacket.', 'She is wearing shorts.', 'He is wearing a jacket.'], answerIndex: 0 },
+    ],
+  },
+  {
+    id: 'g3-food',
+    title: 'Food: Likes and Dislikes',
+    description: 'Read what each character likes and choose the food.',
+    type: 'image-question',
+    difficulty: 'medio',
+    subjectId: 's-english',
+    grade: '3',
+    xpReward: 65,
+    questions: [
+      { id: 'q1', prompt: 'Tom likes vegetables, but he doesn\'t like burgers. Which food doesn\'t Tom like?', image: '/games/apple.png', options: ['Vegetables', 'Burgers', 'Apples'], answerIndex: 1 },
+      { id: 'q2', prompt: 'Ana likes apples. Which sentence is true?', image: '/games/apple.png', options: ['Ana likes apples.', 'Ana doesn\'t like apples.', 'Ana likes burgers.'], answerIndex: 0 },
+      { id: 'q3', prompt: 'Sam doesn\'t like soup. What does Sam dislike?', options: ['Soup', 'Pizza', 'Fruit'], answerIndex: 0 },
+    ],
+  },
+  {
+    id: 'g3-body',
+    title: 'The Monster: Has Got',
+    description: 'Look closely and choose the sentence that describes the monster.',
+    type: 'true-false',
+    difficulty: 'medio',
+    subjectId: 's-english',
+    grade: '3',
+    xpReward: 70,
+    questions: [
+      { id: 'q1', prompt: 'The monster has got three eyes.', options: ['True', 'False'], answerIndex: 0 },
+      { id: 'q2', prompt: 'The monster has got six legs.', options: ['True', 'False'], answerIndex: 1 },
+      { id: 'q3', prompt: 'The monster hasn\'t got two ears.', options: ['True', 'False'], answerIndex: 1 },
+    ],
+  },
+  {
+    id: 'g3-beach',
+    title: 'At the Beach: What Do They Want?',
+    description: 'Read the beach scene and choose the sentence that fits.',
+    type: 'order-elements',
+    difficulty: 'medio',
+    subjectId: 's-english',
+    grade: '3',
+    xpReward: 75,
+    questions: [
+      { id: 'q1', prompt: 'I want to build a sandcastle.', sequence: ['I', 'want', 'to', 'build', 'a', 'sandcastle'] },
+      { id: 'q2', prompt: 'She doesn\'t want to swim.', sequence: ['She', 'doesn\'t', 'want', 'to', 'swim'] },
+      { id: 'q3', prompt: 'He wants to surf.', sequence: ['He', 'wants', 'to', 'surf'] },
+    ],
+  },
+]
+
 export const activities: Activity[] = [
   {
     id: 'a-1',
@@ -628,7 +736,9 @@ export const GRADE_LABELS: Record<Grade, string> = {
 export const GRADE_OPTIONS: Grade[] = ['1', '2', '3', '4', '5', '6']
 
 export function getActivitiesForGrade(grade: Grade): Activity[] {
-  const baseDifficulty = grade === '1' || grade === '2' ? 'facil' : grade === '3' || grade === '4' ? 'medio' : 'dificil'
+  if (grade === '3') return gradeThreeActivities
+
+  const baseDifficulty = grade === '1' || grade === '2' ? 'facil' : grade === '4' ? 'medio' : 'dificil'
   const isEarlyGrade = grade === '1' || grade === '2'
   const isAdvancedGrade = grade === '5' || grade === '6'
 
