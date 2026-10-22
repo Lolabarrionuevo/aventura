@@ -13,6 +13,8 @@ export function ActivityResultScreen({
   xpEarned,
   timeSec,
   onRetry,
+  alreadyCompleted = false,
+  newBadges = [],
 }: {
   activity: Activity
   correctCount: number
@@ -21,15 +23,19 @@ export function ActivityResultScreen({
   xpEarned: number
   timeSec: number
   onRetry: () => void
+  alreadyCompleted?: boolean
+  newBadges?: string[]
 }) {
   const perfect = score === 100
   const passed = score >= 60
 
-  const headline = perfect
-    ? '¡Perfecto! 🌟'
-    : passed
-      ? '¡Buen trabajo! 🎉'
-      : '¡Sigue practicando! 💪'
+  const headline = alreadyCompleted
+    ? 'Actividad completada hoy'
+    : perfect
+      ? '¡Perfecto! 🌟'
+      : passed
+        ? '¡Buen trabajo! 🎉'
+        : '¡Sigue practicando! 💪'
 
   return (
     <main className="grid min-h-screen place-items-center bg-background px-4 py-10">
@@ -56,6 +62,13 @@ export function ActivityResultScreen({
               {correctCount} de {total} respuestas correctas
             </p>
           </div>
+
+          {newBadges.length > 0 && (
+            <div className="w-full rounded-2xl bg-accent/15 p-4 text-center">
+              <p className="font-bold text-foreground">Nuevo logro desbloqueado</p>
+              <p className="mt-1 text-sm text-muted-foreground">{newBadges.join(' · ')}</p>
+            </div>
+          )}
 
           {/* Detalle */}
           <div className="grid w-full grid-cols-3 gap-3">
