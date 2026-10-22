@@ -148,9 +148,9 @@ const gradeThreeActivities: Activity[] = [
     grade: '3',
     xpReward: 65,
     questions: [
-      { id: 'q1', prompt: 'Emma can swim, but she can\'t ride a skateboard. What can Emma do?', options: ['Swim', 'Ride a skateboard', 'Play chess'], answerIndex: 0 },
-      { id: 'q2', prompt: 'Leo can play football, but he can\'t ski. What can\'t Leo do?', options: ['Play football', 'Run', 'Ski'], answerIndex: 2 },
-      { id: 'q3', prompt: 'Mia can ride a bike. Which sentence is true?', options: ['Mia can ride a bike.', 'Mia can\'t ride a bike.', 'Mia can swim.'], answerIndex: 0 },
+      { id: 'q1', prompt: 'Look at the sports scene. What is the girl in the pool doing?', image: '/games/sports-scene.png', options: ['Swimming', 'Skiing', 'Playing chess'], answerIndex: 0 },
+      { id: 'q2', prompt: 'Look at the sports scene. What is the boy doing?', image: '/games/sports-scene.png', options: ['Running a race', 'Playing football', 'Riding a bike'], answerIndex: 1 },
+      { id: 'q3', prompt: 'Look at the sports scene. What is the girl on the right doing?', image: '/games/sports-scene.png', options: ['Riding a bike', 'Swimming', 'Playing football'], answerIndex: 0 },
     ],
   },
   {
@@ -163,9 +163,9 @@ const gradeThreeActivities: Activity[] = [
     grade: '3',
     xpReward: 70,
     questions: [
-      { id: 'q1', prompt: 'Look at the cat. Where is the cat?', image: '/games/cat.png', options: ['Under the table', 'On the table', 'Next to the table'], answerIndex: 1, hint: 'Look carefully at the picture.' },
-      { id: 'q2', prompt: 'Which animal can fly?', image: '/games/cat.png', options: ['A bird', 'A dog', 'A cat'], answerIndex: 0, hint: 'Think about wings.' },
-      { id: 'q3', prompt: 'The dog is next to the table. Which sentence matches the scene?', image: '/games/cat.png', options: ['The dog is next to the table.', 'The dog is under the table.', 'The dog is on the table.'], answerIndex: 0 },
+      { id: 'q1', prompt: 'Look at the scene. Where is the cat?', image: '/games/animals-scene.png', options: ['Under the table', 'On the table', 'Next to the table'], answerIndex: 1, hint: 'Look carefully at the picture.' },
+      { id: 'q2', prompt: 'Look at the scene. Which animal is flying?', image: '/games/animals-scene.png', options: ['A bird', 'A dog', 'A cat'], answerIndex: 0, hint: 'Look near the window.' },
+      { id: 'q3', prompt: 'Look at the scene. Where is the dog?', image: '/games/animals-scene.png', options: ['Next to the table', 'Under the table', 'On the table'], answerIndex: 0 },
     ],
   },
   {
@@ -178,9 +178,9 @@ const gradeThreeActivities: Activity[] = [
     grade: '3',
     xpReward: 60,
     questions: [
-      { id: 'q1', prompt: 'Look at Mia: she is wearing a skirt and a jacket. What is she wearing?', options: ['A skirt', 'Shorts', 'A hat'], answerIndex: 0 },
-      { id: 'q2', prompt: 'Ben is wearing shorts and a blue T-shirt. What is Ben wearing?', options: ['A dress', 'Shorts', 'A jacket'], answerIndex: 1 },
-      { id: 'q3', prompt: 'Mia is wearing a jacket. Which sentence is correct?', options: ['She is wearing a jacket.', 'She is wearing shorts.', 'He is wearing a jacket.'], answerIndex: 0 },
+      { id: 'q1', prompt: 'Look at Mia. What is she wearing?', image: '/games/mia-clothes.png', options: ['A skirt', 'Shorts', 'A hat'], answerIndex: 0 },
+      { id: 'q2', prompt: 'Look at Mia. Which item is part of her outfit?', image: '/games/mia-clothes.png', options: ['A jacket', 'A swimsuit', 'A helmet'], answerIndex: 0 },
+      { id: 'q3', prompt: 'Look at Mia. Which sentence is correct?', image: '/games/mia-clothes.png', options: ['She is wearing a jacket.', 'She is wearing shorts.', 'He is wearing a jacket.'], answerIndex: 0 },
     ],
   },
   {
@@ -193,9 +193,9 @@ const gradeThreeActivities: Activity[] = [
     grade: '3',
     xpReward: 65,
     questions: [
-      { id: 'q1', prompt: 'Tom likes vegetables, but he doesn\'t like burgers. Which food doesn\'t Tom like?', image: '/games/apple.png', options: ['Vegetables', 'Burgers', 'Apples'], answerIndex: 1 },
-      { id: 'q2', prompt: 'Ana likes apples. Which sentence is true?', image: '/games/apple.png', options: ['Ana likes apples.', 'Ana doesn\'t like apples.', 'Ana likes burgers.'], answerIndex: 0 },
-      { id: 'q3', prompt: 'Sam doesn\'t like soup. What does Sam dislike?', options: ['Soup', 'Pizza', 'Fruit'], answerIndex: 0 },
+      { id: 'q1', prompt: 'Look at the food scene. Which food can you see?', image: '/games/food-scene.png', options: ['A burger', 'A shoe', 'A pencil'], answerIndex: 0 },
+      { id: 'q2', prompt: 'Look at the food scene. Which fruit can you see?', image: '/games/food-scene.png', options: ['An apple', 'A carrot', 'A sandwich'], answerIndex: 0 },
+      { id: 'q3', prompt: 'Look at the food scene. Which dish is in a bowl?', image: '/games/food-scene.png', options: ['Soup', 'Pizza', 'A burger'], answerIndex: 0 },
     ],
   },
   {
@@ -208,9 +208,9 @@ const gradeThreeActivities: Activity[] = [
     grade: '3',
     xpReward: 70,
     questions: [
-      { id: 'q1', prompt: 'The monster has got three eyes.', options: ['True', 'False'], answerIndex: 0 },
-      { id: 'q2', prompt: 'The monster has got six legs.', options: ['True', 'False'], answerIndex: 1 },
-      { id: 'q3', prompt: 'The monster hasn\'t got two ears.', options: ['True', 'False'], answerIndex: 1 },
+      { id: 'q1', prompt: 'Look at the monster. It has got three eyes.', image: '/games/monster.png', options: ['True', 'False'], answerIndex: 0 },
+      { id: 'q2', prompt: 'Look at the monster. It has got six legs.', image: '/games/monster.png', options: ['True', 'False'], answerIndex: 0 },
+      { id: 'q3', prompt: 'Look at the monster. It has got one ear.', image: '/games/monster.png', options: ['True', 'False'], answerIndex: 1 },
     ],
   },
   {
