@@ -179,9 +179,9 @@ export const activities: Activity[] = [
     subjectId: 's-english',
     xpReward: 80,
     questions: [
-      { id: 'q1', prompt: 'Casa en inglés: h___', hint: 'house', answer: 'house' },
-      { id: 'q2', prompt: 'Escuela en inglés: s_____', hint: 'school', answer: 'school' },
-      { id: 'q3', prompt: 'Libro en inglés: b___', hint: 'book', answer: 'book' },
+      { id: 'q1', prompt: 'Casa en inglés: h___', hint: 'Lugar donde vivimos', answer: 'house' },
+      { id: 'q2', prompt: 'Escuela en inglés: s_____', hint: 'Lugar donde aprendemos', answer: 'school' },
+      { id: 'q3', prompt: 'Libro en inglés: b___', hint: 'Tiene páginas y se puede leer', answer: 'book' },
     ],
   },
   {
