@@ -1,0 +1,2578 @@
+CODIGOS FUENTE EXTRAIDOS Y UNIFICADOS
+Nota: cada bloque indica la ruta donde debería ubicarse en el proyecto.
+
+
+==========================================================================================
+ARCHIVO: components/games/activity-result.tsx
+==========================================================================================
+
+'use client'
+
+import Link from 'next/link'
+import { Zap, Target, Clock, RotateCcw, Home, PartyPopper } from 'lucide-react'
+import { Logo } from '@/components/logo'
+import type { Activity } from '@/lib/adventure/types'
+
+export function ActivityResultScreen({
+  activity,
+  correctCount,
+  total,
+  score,
+  xpEarned,
+  timeSec,
+  onRetry,
+  alreadyCompleted = false,
+  newBadges = [],
+}: {
+  activity: Activity
+  correctCount: number
+  total: number
+  score: number
+  xpEarned: number
+  timeSec: number
+  onRetry: () => void
+  alreadyCompleted?: boolean
+  newBadges?: string[]
+}) {
+  const perfect = score === 100
+  const passed = score >= 60
+
+  const headline = alreadyCompleted
+    ? 'Actividad completada hoy'
+    : perfect
+      ? '¡Perfecto! 🌟'
+      : passed
+        ? '¡Buen trabajo! 🎉'
+        : '¡Sigue practicando! 💪'
+
+  return (
+    <main className="grid min-h-screen place-items-center bg-background px-4 py-10">
+      <div className="w-full max-w-md">
+        <div className="mb-6 flex justify-center">
+          <Logo />
+        </div>
+
+        <div className="flex flex-col items-center gap-6 rounded-3xl border border-border bg-card p-8 text-center">
+          <span className="grid size-20 place-items-center rounded-full bg-primary/10 text-primary">
+            <PartyPopper className="size-10" aria-hidden="true" />
+          </span>
+
+          <div>
+            <h1 className="font-display text-3xl font-extrabold text-card-foreground">{headline}</h1>
+            <p className="mt-1 text-muted-foreground">{activity.title}</p>
+          </div>
+
+          {/* Puntuación grande */}
+          <div className="w-full rounded-2xl bg-primary p-6 text-primary-foreground">
+            <p className="text-sm font-semibold opacity-90">Puntuación</p>
+            <p className="font-display text-5xl font-extrabold">{score}%</p>
+            <p className="text-sm opacity-90">
+              {correctCount} de {total} respuestas correctas
+            </p>
+          </div>
+
+          {newBadges.length > 0 && (
+            <div className="w-full rounded-2xl bg-accent/15 p-4 text-center">
+              <p className="font-bold text-foreground">Nuevo logro desbloqueado</p>
+              <p className="mt-1 text-sm text-muted-foreground">{newBadges.join(' · ')}</p>
+            </div>
+          )}
+
+          {/* Detalle */}
+          <div className="grid w-full grid-cols-3 gap-3">
+            <ResultStat icon={<Zap className="size-5 text-primary" />} value={`+${xpEarned}`} label="XP" />
+            <ResultStat
+              icon={<Target className="size-5 text-secondary" />}
+              value={`${correctCount}/${total}`}
+              label="Aciertos"
+            />
+            <ResultStat
+              icon={<Clock className="size-5 text-accent" />}
+              value={`${timeSec}s`}
+              label="Tiempo"
+            />
+          </div>
+
+          {/* Acciones */}
+          <div className="flex w-full flex-col gap-2">
+            <Link
+              href="/materias"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-primary font-extrabold text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              <Home className="size-5" />
+              Seguir aprendiendo
+            </Link>
+            <button
+              type="button"
+              onClick={onRetry}
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-border bg-background font-bold text-foreground transition-colors hover:bg-muted"
+            >
+              <RotateCcw className="size-4" />
+              Reintentar
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+  )
+}
+
+function ResultStat({
+  icon,
+  value,
+  label,
+}: {
+  icon: React.ReactNode
+  value: string
+  label: string
+}) {
+  return (
+    <div className="flex flex-col items-center gap-1 rounded-2xl bg-muted px-2 py-3">
+      <span aria-hidden="true">{icon}</span>
+      <span className="font-display text-lg font-extrabold text-foreground">{value}</span>
+      <span className="text-xs text-muted-foreground">{label}</span>
+    </div>
+  )
+}
+
+
+
+==========================================================================================
+ARCHIVO: components/games/activity-tutor.tsx
+==========================================================================================
+
+'use client'
+
+import { FormEvent, useState } from 'react'
+import { Bot, Send, X } from 'lucide-react'
+import type { Activity, Question } from '@/lib/adventure/types'
+
+type Props = { activity: Activity; question: Question; grade: string }
+
+export function ActivityTutor({ activity, question, grade }: Props) {
+  const [open, setOpen] = useState(false)
+  const [message, setMessage] = useState('')
+  const [answer, setAnswer] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  async function ask(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!message.trim() || loading) return
+    const currentMessage = message.trim()
+    setMessage('')
+    setLoading(true)
+    setAnswer('')
+    try {
+      const response = await fetch('/api/tutor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: currentMessage,
+          context: {
+            grade,
+            title: activity.title,
+            description: activity.description,
+            type: activity.type,
+            question: question.prompt,
+            options: question.options,
+            vocabulary: question.sequence?.join(' ') || question.pairs?.map((pair) => `${pair.left} = ${pair.right}`).join(', '),
+            explanation: question.hint,
+          },
+        }),
+      })
+      const data = await response.json()
+      setAnswer(data.answer || data.error || 'No pude responder ahora.')
+    } catch {
+      setAnswer('No pude conectarme ahora. Intenta nuevamente.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="fixed bottom-24 right-4 z-20 inline-flex items-center gap-2 rounded-full bg-accent px-4 py-3 font-extrabold text-accent-foreground shadow-lg transition-transform hover:scale-105"
+        aria-label="Abrir Tutor IA"
+      >
+        <Bot className="size-5" /> Tutor IA
+      </button>
+      {open && (
+        <div className="fixed inset-x-4 bottom-24 z-30 mx-auto max-w-md rounded-2xl border border-border bg-background p-4 shadow-2xl sm:right-6 sm:left-auto">
+          <div className="mb-3 flex items-center justify-between">
+            <div>
+              <p className="font-display font-extrabold">Tutor IA</p>
+              <p className="text-xs text-muted-foreground">Te ayudo con esta pregunta sin resolverla por ti.</p>
+            </div>
+            <button type="button" onClick={() => setOpen(false)} aria-label="Cerrar Tutor IA" className="rounded-full p-2 hover:bg-muted">
+              <X className="size-4" />
+            </button>
+          </div>
+          {answer && <p className="mb-3 rounded-xl bg-muted p-3 text-sm leading-relaxed">{answer}</p>}
+          <form onSubmit={ask} className="flex gap-2">
+            <input
+              value={message}
+              onChange={(event) => setMessage(event.target.value)}
+              placeholder="Escribe tu pregunta..."
+              aria-label="Pregunta para el Tutor IA"
+              className="min-w-0 flex-1 rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+            />
+            <button type="submit" disabled={!message.trim() || loading} aria-label="Enviar pregunta" className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground disabled:opacity-50">
+              <Send className="size-4" />
+            </button>
+          </form>
+        </div>
+      )}
+    </>
+  )
+}
+
+
+
+==========================================================================================
+ARCHIVO: components/games/body-question.tsx
+==========================================================================================
+
+'use client'
+
+import type { ReactNode } from 'react'
+import { cn } from '@/lib/utils'
+import type { Question } from '@/lib/adventure/types'
+import { SpeakButton } from './speak-button'
+
+type Part = 'head' | 'arm' | 'hand' | 'body' | 'leg' | 'foot'
+
+const SKIN = '#F6C79B'
+const SHIRT = '#3B82F6'
+const SHORTS = '#1E3A8A'
+const SHOES = '#E5533D'
+const HAIR = '#6B3F1D'
+
+/** Devuelve un índice válido dentro de [0, length) o -1 si el valor no sirve. */
+function validIndex(value: number | null | undefined, length: number): number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 0 && value < length ? value : -1
+}
+
+/** Dibujo del cuerpo donde se toca la parte pedida. No marca nada hasta que se responde. */
+export function BodyQuestion({
+  question,
+  selected,
+  answered,
+  onSelect,
+}: {
+  question: Question
+  selected: number | null
+  answered: boolean
+  onSelect: (index: number) => void
+}) {
+  const parts = (Array.isArray(question.options) ? question.options : []) as Part[]
+  // Índices validados: si answerIndex o selected no son enteros dentro del rango, no se marca nada.
+  const correctIndex = validIndex(question.answerIndex, parts.length)
+  const correctPart = correctIndex >= 0 ? parts[correctIndex] : undefined
+  const selectedIndex = validIndex(selected, parts.length)
+  const selectedPart = selectedIndex >= 0 ? parts[selectedIndex] : undefined
+
+  function select(part: Part) {
+    if (answered) return
+    const index = parts.indexOf(part)
+    if (index < 0) return // la parte no está en las opciones: nunca enviamos un -1
+    onSelect(index)
+  }
+
+  function stroke(part: Part) {
+    if (!answered) return { stroke: 'transparent', strokeWidth: 0 }
+    if (part === correctPart) return { stroke: '#16a34a', strokeWidth: 6 }
+    if (part === selectedPart) return { stroke: '#dc2626', strokeWidth: 6 }
+    return { stroke: 'transparent', strokeWidth: 0 }
+  }
+
+  function group(part: Part, children: ReactNode) {
+    return (
+      <g
+        role="button"
+        tabIndex={answered ? -1 : 0}
+        aria-label={answered ? part : 'Parte del cuerpo'}
+        className={cn(!answered && 'cursor-pointer hover:opacity-80 focus:opacity-80 focus:outline-none')}
+        onClick={() => select(part)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            select(part)
+          }
+        }}
+        {...stroke(part)}
+      >
+        {children}
+      </g>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <h2 className="text-balance text-center font-display text-2xl font-extrabold text-foreground">
+        {question.prompt}
+      </h2>
+      {question.speak && <SpeakButton text={question.speak} />}
+
+      <svg viewBox="0 0 240 390" className="mx-auto h-[26rem] max-h-[60vh] w-auto rounded-3xl bg-muted p-2" role="group" aria-label="Dibujo de un niño">
+        {/* Piernas */}
+        {group('leg', (
+          <>
+            <rect x="84" y="276" width="32" height="82" rx="12" fill={SKIN} />
+            <rect x="124" y="276" width="32" height="82" rx="12" fill={SKIN} />
+          </>
+        ))}
+        {/* Pies */}
+        {group('foot', (
+          <>
+            <rect x="72" y="350" width="50" height="26" rx="13" fill={SHOES} />
+            <rect x="118" y="350" width="50" height="26" rx="13" fill={SHOES} />
+          </>
+        ))}
+        {/* Brazos */}
+        {group('arm', (
+          <>
+            <rect x="44" y="128" width="32" height="56" rx="15" fill={SHIRT} />
+            <rect x="48" y="176" width="26" height="60" rx="12" fill={SKIN} />
+            <rect x="164" y="128" width="32" height="56" rx="15" fill={SHIRT} />
+            <rect x="166" y="176" width="26" height="60" rx="12" fill={SKIN} />
+          </>
+        ))}
+        {/* Manos */}
+        {group('hand', (
+          <>
+            <circle cx="61" cy="250" r="17" fill={SKIN} />
+            <circle cx="179" cy="250" r="17" fill={SKIN} />
+          </>
+        ))}
+        {/* Cuerpo: camiseta y short */}
+        {group('body', (
+          <>
+            <rect x="74" y="124" width="92" height="116" rx="20" fill={SHIRT} />
+            <rect x="78" y="226" width="84" height="56" rx="14" fill={SHORTS} />
+          </>
+        ))}
+        {/* Cabeza */}
+        {group('head', (
+          <>
+            <rect x="106" y="112" width="28" height="22" rx="8" fill={SKIN} />
+            <circle cx="68" cy="72" r="11" fill={SKIN} />
+            <circle cx="172" cy="72" r="11" fill={SKIN} />
+            <circle cx="120" cy="68" r="52" fill={SKIN} />
+            <path d="M66 76 C56 14 184 14 174 76 C166 58 148 50 120 50 C92 50 74 58 66 76 Z" fill={HAIR} />
+            <circle cx="102" cy="74" r="6" fill="#33281E" />
+            <circle cx="138" cy="74" r="6" fill="#33281E" />
+            <circle cx="92" cy="90" r="7" fill="#F2A28C" opacity="0.6" />
+            <circle cx="148" cy="90" r="7" fill="#F2A28C" opacity="0.6" />
+            <path d="M104 94 Q120 110 136 94" stroke="#B5533C" strokeWidth="4" fill="none" strokeLinecap="round" />
+          </>
+        ))}
+      </svg>
+    </div>
+  )
+}
+
+
+
+==========================================================================================
+ARCHIVO: components/games/choice-question.tsx
+==========================================================================================
+
+'use client'
+
+import { Check, X } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import type { Question } from '@/lib/adventure/types'
+import { SpeakButton } from './speak-button'
+
+export function ChoiceQuestion({
+  question,
+  selected,
+  selectedMulti = [],
+  answered,
+  onSelect,
+}: {
+  question: Question
+  selected: number | null
+  /** Opciones marcadas cuando la pregunta permite elegir varias. */
+  selectedMulti?: number[]
+  answered: boolean
+  /** Con una sola respuesta responde; con varias marca o desmarca. */
+  onSelect: (index: number) => void
+}) {
+  // Datos defensivos: nunca asumimos que vienen completos o con la misma longitud.
+  // (La validación real de la respuesta se hace en GamePlayer; aquí solo se pinta el resultado.)
+  const options = Array.isArray(question.options) ? question.options : []
+  const safeOptionImages = Array.isArray(question.optionImages) ? question.optionImages : []
+  const safeSelectedMulti = Array.isArray(selectedMulti) ? selectedMulti : []
+  const multi = Array.isArray(question.answerIndexes)
+  const correctSet = multi
+    ? question.answerIndexes!
+    : typeof question.answerIndex === 'number' && Number.isInteger(question.answerIndex)
+      ? [question.answerIndex]
+      : []
+  const hasImageOptions = safeOptionImages.length > 0
+  const stacked = question.optionLayout === 'stack'
+
+  return (
+    <div className="flex flex-col gap-5">
+      {question.passage && (
+        <div className="rounded-2xl border-2 border-border bg-card p-4 text-lg font-semibold leading-relaxed text-card-foreground">
+          {question.passage.split('\n').map((line, lineIndex) => (
+            <p key={`line-${lineIndex}`}>{line}</p>
+          ))}
+        </div>
+      )}
+
+      {question.image && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={question.image}
+          alt="Imagen de la pregunta"
+          className="mx-auto max-h-56 w-auto max-w-full rounded-3xl bg-muted object-contain p-2"
+        />
+      )}
+
+      <h2 className="text-balance text-center font-display text-2xl font-extrabold text-foreground">
+        {question.prompt}
+      </h2>
+
+      {question.speak && <SpeakButton text={question.speak} />}
+
+      {multi && !answered && (
+        <p className="text-center text-sm font-bold text-muted-foreground">Puedes elegir más de una opción.</p>
+      )}
+
+      {hasImageOptions ? (
+        <div
+          className={cn(
+            'grid gap-3',
+            stacked ? 'mx-auto w-full max-w-md grid-cols-1' : options.length > 4 ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2',
+          )}
+        >
+          {options.map((label, i) => {
+            const isCorrect = correctSet.includes(i)
+            const isSelected = multi ? safeSelectedMulti.includes(i) : i === selected
+            const imageSrc = safeOptionImages[i]
+            return (
+              <button
+                key={`option-${i}`}
+                type="button"
+                disabled={answered}
+                onClick={() => onSelect(i)}
+                aria-label={answered || !imageSrc ? label : `Opción ${i + 1}`}
+                aria-pressed={multi ? isSelected : undefined}
+                className={cn(
+                  'relative flex flex-col items-center gap-2 rounded-2xl border-2 p-3 transition-all',
+                  !answered && !isSelected && 'border-border bg-card hover:-translate-y-0.5 hover:border-primary/50',
+                  !answered && isSelected && 'border-primary bg-primary/10',
+                  answered && isCorrect && 'border-success bg-success/10',
+                  answered && isSelected && !isCorrect && 'border-destructive bg-destructive/10',
+                  answered && !isCorrect && !isSelected && 'border-border bg-card opacity-60',
+                )}
+              >
+                {imageSrc ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={imageSrc}
+                    alt=""
+                    className={cn(
+                      'w-full rounded-xl bg-white object-contain',
+                      stacked ? 'h-28' : 'aspect-square',
+                    )}
+                  />
+                ) : (
+                  // Si falta la imagen de esta opción, se muestra su texto para que siga siendo jugable.
+                  <span
+                    className={cn(
+                      'grid w-full place-items-center rounded-xl bg-white p-2 text-center text-lg font-extrabold text-foreground',
+                      stacked ? 'h-28' : 'aspect-square',
+                    )}
+                  >
+                    {label}
+                  </span>
+                )}
+                {answered && imageSrc && <span className="text-base font-extrabold text-foreground">{label}</span>}
+                {answered && isCorrect && <Check className="absolute right-2 top-2 size-6 rounded-full bg-success p-1 text-white" />}
+                {answered && isSelected && !isCorrect && (
+                  <X className="absolute right-2 top-2 size-6 rounded-full bg-destructive p-1 text-white" />
+                )}
+              </button>
+            )
+          })}
+        </div>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {options.map((option, i) => {
+            const isCorrect = correctSet.includes(i)
+            const isSelected = multi ? safeSelectedMulti.includes(i) : i === selected
+            return (
+              <button
+                key={`option-${i}`}
+                type="button"
+                disabled={answered}
+                onClick={() => onSelect(i)}
+                aria-pressed={multi ? isSelected : undefined}
+                className={cn(
+                  'flex items-center justify-between gap-2 rounded-2xl border-2 px-5 py-4 text-left text-lg font-bold transition-all',
+                  !answered && !isSelected && 'border-border bg-card text-card-foreground hover:-translate-y-0.5 hover:border-primary/50',
+                  !answered && isSelected && 'border-primary bg-primary/10 text-foreground',
+                  answered && isCorrect && 'border-success bg-success/10 text-foreground',
+                  answered && isSelected && !isCorrect && 'border-destructive bg-destructive/10 text-foreground',
+                  answered && !isCorrect && !isSelected && 'border-border bg-card opacity-60',
+                )}
+              >
+                {option}
+                {answered && isCorrect && <Check className="size-5 shrink-0 text-success" />}
+                {answered && isSelected && !isCorrect && <X className="size-5 shrink-0 text-destructive" />}
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      {/* La pista solo aparece DESPUÉS de responder, para no regalar la respuesta. */}
+      {question.hint && answered && (
+        <p className="text-center text-sm font-bold text-muted-foreground">💡 {question.hint}</p>
+      )}
+    </div>
+  )
+}
+
+
+
+==========================================================================================
+ARCHIVO: components/games/complete-word-question.tsx
+==========================================================================================
+
+'use client'
+
+import { Check, X } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import type { Question } from '@/lib/adventure/types'
+
+export function CompleteWordQuestion({
+  question,
+  value,
+  answered,
+  isCorrect,
+  onChange,
+}: {
+  question: Question
+  value: string
+  answered: boolean
+  isCorrect: boolean
+  onChange: (v: string) => void
+}) {
+  return (
+    <div className="flex flex-col gap-5">
+      <h2 className="text-balance text-center font-display text-2xl font-extrabold text-foreground">
+        {question.prompt}
+      </h2>
+      <div className="relative mx-auto w-full max-w-sm">
+        <input
+          type="text"
+          value={value}
+          disabled={answered}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Escribe aquí..."
+          autoComplete="off"
+          className={cn(
+            'h-14 w-full rounded-2xl border-2 bg-card px-5 text-center text-xl font-bold outline-none transition-colors',
+            !answered && 'border-border focus:border-ring focus:ring-3 focus:ring-ring/40',
+            answered && isCorrect && 'border-success bg-success/10',
+            answered && !isCorrect && 'border-destructive bg-destructive/10',
+          )}
+        />
+        {answered && (
+          <span className="absolute right-4 top-1/2 -translate-y-1/2">
+            {isCorrect ? (
+              <Check className="size-6 text-success" />
+            ) : (
+              <X className="size-6 text-destructive" />
+            )}
+          </span>
+        )}
+      </div>
+      {answered && !isCorrect && (
+        <p className="text-center text-sm font-bold text-muted-foreground">
+          Respuesta correcta: <span className="text-success">{question.answer}</span>
+        </p>
+      )}
+    </div>
+  )
+}
+
+
+
+==========================================================================================
+ARCHIVO: components/games/game-player.tsx
+==========================================================================================
+
+'use client'
+
+import { useEffect, useMemo, useRef, useState } from 'react'
+import Link from 'next/link'
+import { X, ArrowRight, Timer } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { ProgressBar } from '@/components/progress-bar'
+import { useSession } from '@/components/session-provider'
+import { ChoiceQuestion } from './choice-question'
+import { CompleteWordQuestion } from './complete-word-question'
+import { OrderQuestion } from './order-question'
+import { MatchQuestion } from './match-question'
+import { MemoryQuestion } from './memory-question'
+import { BodyQuestion } from './body-question'
+import { ActivityResultScreen } from './activity-result'
+import { newlyEarnedBadges, scoreActivity } from '@/lib/adventure/gamification'
+import { getTodayCompletion, recordCompletion } from '@/lib/adventure/progress'
+import type { Activity, Question } from '@/lib/adventure/types'
+
+function shuffleIndexes(n: number): number[] {
+  const a = Array.from({ length: n }, (_, i) => i)
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+/**
+ * Mezcla las opciones para que la respuesta correcta no esté siempre en la misma posición.
+ * No mezcla verdadero/falso, can / can’t ni las partes del cuerpo (keepOrder / bodyPart).
+ */
+function prepareQuestion(activity: Activity, q: Question): Question {
+  if (!q.options || q.options.length < 2) return q
+  if (q.keepOrder || q.bodyPart || activity.type === 'true-false') return q
+  const order = shuffleIndexes(q.options.length)
+  return {
+    ...q,
+    options: order.map((i) => q.options![i]),
+    optionImages: q.optionImages ? order.map((i) => q.optionImages![i]) : undefined,
+    answerIndex: q.answerIndex !== undefined ? order.indexOf(q.answerIndex) : undefined,
+    answerIndexes: q.answerIndexes ? q.answerIndexes.map((a) => order.indexOf(a)) : undefined,
+  }
+}
+
+type Kind = 'choice' | 'body' | 'text' | 'order' | 'match' | 'memory'
+
+function kindOf(activity: Activity, q: Question): Kind {
+  if (q.pairs) return activity.type === 'memory' ? 'memory' : 'match'
+  if (q.sequence) return 'order'
+  if (q.answer !== undefined) return 'text'
+  if (q.bodyPart) return 'body'
+  return 'choice'
+}
+
+export function GamePlayer({ activity }: { activity: Activity }) {
+  const { student } = useSession()
+  // La key remonta el juego si cambia el alumno o la actividad. Así el estado de la partida
+  // y `todayCompleted` se recalculan siempre y nunca quedan viejos.
+  return <GamePlayerSession key={`${student.id}:${activity.id}`} activity={activity} />
+}
+
+function GamePlayerSession({ activity }: { activity: Activity }) {
+  const { student, setStudent } = useSession()
+
+  const [index, setIndex] = useState(0)
+  const [correctCount, setCorrectCount] = useState(0)
+  const [done, setDone] = useState(false)
+  const [celebrate, setCelebrate] = useState(false)
+  const [result, setResult] = useState<{ score: number; xpEarned: number; timeSec: number } | null>(null)
+  const [newBadges, setNewBadges] = useState<string[]>([])
+  const [todayCompleted] = useState(() => getTodayCompletion(student.id, activity.id))
+
+  // Estado de la pregunta actual
+  const [selected, setSelected] = useState<number | null>(null)
+  const [selectedMulti, setSelectedMulti] = useState<number[]>([])
+  const [textValue, setTextValue] = useState('')
+  const [orderChosen, setOrderChosen] = useState<number[]>([])
+  const [answered, setAnswered] = useState(false)
+  const [lastCorrect, setLastCorrect] = useState(false)
+
+  const startRef = useRef(Date.now())
+  const finishedRef = useRef(false)
+  // Fuente de verdad de los aciertos: un ref no queda "viejo" entre renders (a diferencia del estado).
+  const correctCountRef = useRef(0)
+  const total = activity.questions.length
+  const rawQuestion = activity.questions[index]
+  // Las opciones se mezclan una sola vez por pregunta.
+  const question = useMemo(() => prepareQuestion(activity, rawQuestion), [activity.id, index]) // eslint-disable-line react-hooks/exhaustive-deps
+  const kind = kindOf(activity, question)
+  const isMulti = kind === 'choice' && Array.isArray(question.answerIndexes)
+
+  // Temporizador para quiz contra reloj
+  const [timeLeft, setTimeLeft] = useState(activity.timeLimitSec ?? 0)
+  const isTimed = activity.type === 'timed-quiz' && (activity.timeLimitSec ?? 0) > 0
+
+  useEffect(() => {
+    if (!isTimed || done) return
+    if (timeLeft <= 0) {
+      // Se acabó el tiempo: cierra la partida con los aciertos reales (ref), no con el estado del render.
+      finish(correctCountRef.current)
+      return
+    }
+    const t = setTimeout(() => setTimeLeft((v) => v - 1), 1000)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeLeft, isTimed, done])
+
+  function finish(finalCorrect: number) {
+    if (finishedRef.current) return
+    finishedRef.current = true
+    const timeSec = Math.round((Date.now() - startRef.current) / 1000)
+    const { score, xpEarned } = scoreActivity({
+      correctCount: finalCorrect,
+      totalCount: total,
+      timeSec,
+      timeLimitSec: activity.timeLimitSec,
+      baseXpReward: activity.xpReward,
+    })
+    const rewardKey = `adventure-reward:${student.id}:${activity.id}`
+    const alreadyRewarded = localStorage.getItem(rewardKey) === '1'
+    const awardedXp = alreadyRewarded ? 0 : xpEarned
+    if (!alreadyRewarded) localStorage.setItem(rewardKey, '1')
+    if (!alreadyRewarded && finalCorrect === total) setCelebrate(true)
+    if (!alreadyRewarded) {
+      recordCompletion({
+        id: `${student.id}-${activity.id}-${Date.now()}`,
+        studentId: student.id,
+        activityId: activity.id,
+        correctCount: finalCorrect,
+        totalCount: total,
+        timeSec,
+        score,
+        xpEarned: awardedXp,
+        date: new Date().toISOString(),
+      })
+    }
+    const updatedStudent = { ...student, xp: student.xp + awardedXp }
+    const earnedNow = newlyEarnedBadges(updatedStudent, activity.id, score)
+    if (earnedNow.length > 0) {
+      updatedStudent.badgeIds = [...updatedStudent.badgeIds, ...earnedNow.map((badge) => badge.id)]
+      setNewBadges(earnedNow.map((badge) => badge.name))
+    }
+    setStudent(updatedStudent)
+    setResult({ score, xpEarned: awardedXp, timeSec })
+    setDone(true)
+  }
+
+  function registerCorrect() {
+    correctCountRef.current += 1
+    setCorrectCount(correctCountRef.current)
+  }
+
+  // La validación real de cada respuesta vive aquí; los componentes solo informan qué eligió la persona.
+  function commitChoice(i: number) {
+    if (answered) return
+    if (!Number.isInteger(i) || i < 0 || i >= (question.options?.length ?? 0)) return
+    setSelected(i)
+    const correct = i === question.answerIndex
+    setLastCorrect(correct)
+    setAnswered(true)
+    if (correct) registerCorrect()
+  }
+
+  function toggleMulti(i: number) {
+    if (answered) return
+    setSelectedMulti((prev) => (prev.includes(i) ? prev.filter((v) => v !== i) : [...prev, i]))
+  }
+
+  function commitMulti() {
+    if (answered || selectedMulti.length === 0) return
+    const expected = [...(question.answerIndexes ?? [])].sort((a, b) => a - b)
+    const given = [...selectedMulti].sort((a, b) => a - b)
+    const correct = expected.length === given.length && expected.every((v, k) => v === given[k])
+    setLastCorrect(correct)
+    setAnswered(true)
+    if (correct) registerCorrect()
+  }
+
+  function commitText() {
+    if (answered || !textValue.trim()) return
+    const correct =
+      textValue.trim().toLowerCase() === (question.answer ?? '').trim().toLowerCase()
+    setLastCorrect(correct)
+    setAnswered(true)
+    if (correct) registerCorrect()
+  }
+
+  function chooseOrder(i: number) {
+    if (answered) return
+    const next = [...orderChosen, i]
+    setOrderChosen(next)
+    if (next.length === (question.sequence?.length ?? 0)) {
+      const correct = next.every((v, pos) => v === pos)
+      setLastCorrect(correct)
+      setAnswered(true)
+      if (correct) registerCorrect()
+    }
+  }
+
+  function settleInteractive(valid: boolean) {
+    if (answered) return
+    setLastCorrect(valid)
+    setAnswered(true)
+    if (valid) registerCorrect()
+  }
+
+  // match-concepts: cada elemento de la izquierda debe estar unido a SU pareja correcta.
+  function completeMatch(matched: Record<string, string>) {
+    const pairs = question.pairs ?? []
+    const valid =
+      pairs.length > 0 &&
+      Object.keys(matched ?? {}).length === pairs.length &&
+      pairs.every((p) => matched[p.left] === p.right)
+    settleInteractive(valid)
+  }
+
+  // memory: tienen que estar encontradas TODAS las parejas (p-0, p-1, ...), sin faltar ni repetirse.
+  function completeMemory(foundPairKeys: string[]) {
+    const pairs = question.pairs ?? []
+    const found = new Set(foundPairKeys ?? [])
+    const valid = pairs.length > 0 && found.size === pairs.length && pairs.every((_, i) => found.has(`p-${i}`))
+    settleInteractive(valid)
+  }
+
+  function next() {
+    if (index + 1 >= total) {
+      finish(correctCountRef.current)
+      return
+    }
+    setIndex((i) => i + 1)
+    setSelected(null)
+    setSelectedMulti([])
+    setTextValue('')
+    setOrderChosen([])
+    setAnswered(false)
+    setLastCorrect(false)
+  }
+
+  if (todayCompleted && !done) {
+    return (
+      <ActivityResultScreen
+        activity={activity}
+        correctCount={todayCompleted.correctCount}
+        total={todayCompleted.totalCount}
+        score={todayCompleted.score}
+        xpEarned={0}
+        timeSec={todayCompleted.timeSec}
+        onRetry={() => window.location.reload()}
+        alreadyCompleted
+      />
+    )
+  }
+
+  if (done && result) {
+    return (
+      <ActivityResultScreen
+        activity={activity}
+        correctCount={correctCount}
+        total={total}
+        score={result.score}
+        xpEarned={result.xpEarned}
+        timeSec={result.timeSec}
+        onRetry={() => window.location.reload()}
+        newBadges={newBadges}
+      />
+    )
+  }
+
+  return (
+    <main className="min-h-screen bg-background">
+      {celebrate && (
+        <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden" aria-live="polite">
+          <div className="absolute left-1/2 top-1/3 -translate-x-1/2 rounded-2xl bg-background/95 px-6 py-4 text-center shadow-xl">
+            <p className="font-display text-2xl font-extrabold text-primary">{'🎉 ¡Lo lograste!'}</p>
+            <p className="mt-1 font-bold text-muted-foreground">+{activity.xpReward} XP</p>
+          </div>
+          {Array.from({ length: 32 }, (_, i) => (
+            <span
+              key={i}
+              className="absolute top-0 h-3 w-2 animate-[confetti-fall_2.5s_ease-in_forwards] rounded-sm"
+              style={{ left: `${(i * 31) % 100}%`, backgroundColor: ['#f97316', '#22c55e', '#3b82f6', '#eab308'][i % 4], animationDelay: `${(i % 8) * 80}ms` }}
+            />
+          ))}
+        </div>
+      )}
+      {/* Barra superior con progreso */}
+      <header className="sticky top-0 z-10 border-b border-border bg-background">
+        <div className="mx-auto flex max-w-3xl items-center gap-4 px-4 py-4">
+          <Link
+            href="/materias"
+            aria-label="Salir de la actividad"
+            className="grid size-9 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <X className="size-5" />
+          </Link>
+          <ProgressBar value={((index + (answered ? 1 : 0)) / total) * 100} className="h-4" />
+          {isTimed ? (
+            <span
+              className={cn(
+                'inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1 text-sm font-extrabold',
+                timeLeft <= 10 ? 'bg-destructive/10 text-destructive' : 'bg-muted text-foreground',
+              )}
+            >
+              <Timer className="size-4" />
+              {timeLeft}s
+            </span>
+          ) : (
+            <span className="shrink-0 text-sm font-bold text-muted-foreground">
+              {index + 1}/{total}
+            </span>
+          )}
+        </div>
+      </header>
+
+      <div className="mx-auto flex max-w-3xl flex-col px-4 pb-32 pt-8">
+        {/* Render de la pregunta según su forma (así un mismo juego puede mezclar tipos) */}
+        {kind === 'choice' && (
+          <ChoiceQuestion
+            question={question}
+            selected={selected}
+            selectedMulti={selectedMulti}
+            answered={answered}
+            onSelect={isMulti ? toggleMulti : commitChoice}
+          />
+        )}
+
+        {kind === 'body' && (
+          <BodyQuestion question={question} selected={selected} answered={answered} onSelect={commitChoice} />
+        )}
+
+        {kind === 'text' && (
+          <CompleteWordQuestion
+            question={question}
+            value={textValue}
+            answered={answered}
+            isCorrect={lastCorrect}
+            onChange={setTextValue}
+          />
+        )}
+
+        {kind === 'order' && (
+          <OrderQuestion
+            question={question}
+            chosen={orderChosen}
+            answered={answered}
+            isCorrect={lastCorrect}
+            onChoose={chooseOrder}
+            onReset={() => setOrderChosen([])}
+          />
+        )}
+
+        {kind === 'match' && (
+          <MatchQuestion question={question} answered={answered} onComplete={completeMatch} />
+        )}
+
+        {kind === 'memory' && (
+          <MemoryQuestion question={question} answered={answered} onComplete={completeMemory} />
+        )}
+      </div>
+
+      {/* Barra inferior de acción */}
+      <footer
+        className={cn(
+          'fixed inset-x-0 bottom-0 border-t transition-colors',
+          answered && lastCorrect && 'border-success/30 bg-success/10',
+          answered && !lastCorrect && 'border-destructive/30 bg-destructive/10',
+          !answered && 'border-border bg-background',
+        )}
+      >
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-4">
+          <div className="min-h-6">
+            {answered && (
+              <p
+                className={cn(
+                  'font-display text-lg font-extrabold',
+                  lastCorrect ? 'text-success' : 'text-destructive',
+                )}
+              >
+                {lastCorrect ? '¡Correcto! 🎉' : '¡Casi! Sigue intentando 💪'}
+              </p>
+            )}
+          </div>
+
+          {/* Botón de acción contextual */}
+          {(kind === 'text' || isMulti) && !answered ? (
+            <button
+              type="button"
+              onClick={isMulti ? commitMulti : commitText}
+              disabled={isMulti ? selectedMulti.length === 0 : !textValue.trim()}
+              className="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-8 font-extrabold text-primary-foreground disabled:opacity-50"
+            >
+              Comprobar
+            </button>
+          ) : answered ? (
+            <button
+              type="button"
+              onClick={next}
+              className="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-8 font-extrabold text-primary-foreground"
+            >
+              {index + 1 >= total ? 'Finalizar' : 'Continuar'}
+              <ArrowRight className="size-5" />
+            </button>
+          ) : (
+            <span className="text-sm text-muted-foreground">
+              {kind === 'match' || kind === 'memory'
+                ? 'Completa el ejercicio'
+                : kind === 'body'
+                  ? 'Toca la parte del cuerpo'
+                  : 'Elige tu respuesta'}
+            </span>
+          )}
+        </div>
+      </footer>
+    </main>
+  )
+}
+
+
+
+==========================================================================================
+ARCHIVO: components/games/match-question.tsx
+==========================================================================================
+
+'use client'
+
+import { useMemo, useState } from 'react'
+import { cn } from '@/lib/utils'
+import type { Question } from '@/lib/adventure/types'
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+export function MatchQuestion({
+  question,
+  answered,
+  onComplete,
+}: {
+  question: Question
+  answered: boolean
+  /** Devuelve las uniones que armó la persona (izquierda → derecha); GamePlayer las valida. */
+  onComplete: (matched: Record<string, string>) => void
+}) {
+  const pairs = question.pairs ?? []
+  const lefts = useMemo(() => pairs.map((p) => p.left), [question.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  const imageOf = (left: string) => pairs.find((p) => p.left === left)?.leftImage
+  const rights = useMemo(() => shuffle(pairs.map((p) => p.right)), [question.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const [activeLeft, setActiveLeft] = useState<string | null>(null)
+  const [matched, setMatched] = useState<Record<string, string>>({})
+  const [wrong, setWrong] = useState<string | null>(null)
+
+  function selectRight(right: string) {
+    if (!activeLeft || answered) return
+    const correctRight = pairs.find((p) => p.left === activeLeft)?.right
+    if (right === correctRight) {
+      const next = { ...matched, [activeLeft]: right }
+      setMatched(next)
+      setActiveLeft(null)
+      if (Object.keys(next).length === pairs.length) {
+        setTimeout(() => onComplete(next), 350)
+      }
+    } else {
+      setWrong(right)
+      setTimeout(() => setWrong(null), 500)
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-5">
+      <h2 className="text-balance text-center font-display text-2xl font-extrabold text-foreground">
+        {question.prompt}
+      </h2>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-col gap-3">
+          {lefts.map((left) => {
+            const isMatched = left in matched
+            const isActive = activeLeft === left
+            return (
+              <button
+                key={left}
+                type="button"
+                disabled={isMatched || answered}
+                onClick={() => setActiveLeft(left)}
+                className={cn(
+                  'rounded-2xl border-2 px-4 py-3 text-lg font-bold transition-all',
+                  isMatched && 'border-success bg-success/10 text-foreground opacity-70',
+                  isActive && 'border-primary bg-primary/10 text-foreground',
+                  !isMatched && !isActive && 'border-border bg-card text-card-foreground hover:border-primary/50',
+                )}
+              >
+                {imageOf(left) ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={imageOf(left)} alt={isMatched ? left : 'Animal'} className="mx-auto h-24 w-auto rounded-xl bg-white object-contain" />
+                ) : (
+                  left
+                )}
+              </button>
+            )
+          })}
+        </div>
+        <div className="flex flex-col gap-3">
+          {rights.map((right) => {
+            const isMatched = Object.values(matched).includes(right)
+            const isWrong = wrong === right
+            return (
+              <button
+                key={right}
+                type="button"
+                disabled={isMatched || answered}
+                onClick={() => selectRight(right)}
+                className={cn(
+                  'rounded-2xl border-2 px-4 py-3 text-lg font-bold transition-all',
+                  isMatched && 'border-success bg-success/10 text-foreground opacity-70',
+                  isWrong && 'border-destructive bg-destructive/10 text-foreground',
+                  !isMatched && !isWrong && 'border-border bg-card text-card-foreground hover:border-primary/50',
+                )}
+              >
+                {right}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+      <p className="text-center text-sm text-muted-foreground">
+        Toca un elemento de la izquierda y luego su pareja de la derecha.
+      </p>
+    </div>
+  )
+}
+
+
+
+==========================================================================================
+ARCHIVO: components/games/memory-question.tsx
+==========================================================================================
+
+'use client'
+
+import { useMemo, useState } from 'react'
+import { cn } from '@/lib/utils'
+import type { Question } from '@/lib/adventure/types'
+
+interface Card {
+  id: string
+  pairKey: string
+  label: string
+}
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+export function MemoryQuestion({
+  question,
+  answered,
+  onComplete,
+}: {
+  question: Question
+  answered: boolean
+  /** Devuelve las claves de las parejas encontradas (p-0, p-1, ...); GamePlayer las valida. */
+  onComplete: (foundPairKeys: string[]) => void
+}) {
+  const cards = useMemo<Card[]>(() => {
+    const pairs = question.pairs ?? []
+    const deck: Card[] = []
+    pairs.forEach((p, i) => {
+      deck.push({ id: `l-${i}`, pairKey: `p-${i}`, label: p.left })
+      deck.push({ id: `r-${i}`, pairKey: `p-${i}`, label: p.right })
+    })
+    return shuffle(deck)
+  }, [question.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const [flipped, setFlipped] = useState<string[]>([])
+  const [matched, setMatched] = useState<string[]>([])
+  const [busy, setBusy] = useState(false)
+
+  function flip(card: Card) {
+    if (busy || answered) return
+    if (flipped.includes(card.id) || matched.includes(card.pairKey)) return
+
+    const next = [...flipped, card.id]
+    setFlipped(next)
+
+    if (next.length === 2) {
+      setBusy(true)
+      const [a, b] = next.map((id) => cards.find((c) => c.id === id)!)
+      if (a.pairKey === b.pairKey) {
+        setTimeout(() => {
+          const nextMatched = [...matched, a.pairKey]
+          setMatched(nextMatched)
+          setFlipped([])
+          setBusy(false)
+          if (nextMatched.length === (question.pairs?.length ?? 0)) {
+            setTimeout(() => onComplete(nextMatched), 350)
+          }
+        }, 500)
+      } else {
+        setTimeout(() => {
+          setFlipped([])
+          setBusy(false)
+        }, 800)
+      }
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-5">
+      <h2 className="text-balance text-center font-display text-2xl font-extrabold text-foreground">
+        {question.prompt}
+      </h2>
+      <div className="mx-auto grid w-full max-w-md grid-cols-4 gap-3">
+        {cards.map((card) => {
+          const isUp = flipped.includes(card.id) || matched.includes(card.pairKey)
+          return (
+            <button
+              key={card.id}
+              type="button"
+              onClick={() => flip(card)}
+              disabled={isUp || answered}
+              className={cn(
+                'grid aspect-square place-items-center rounded-2xl border-2 p-1 text-center text-sm font-bold transition-all',
+                isUp
+                  ? 'border-primary bg-primary/10 text-foreground'
+                  : 'border-border bg-primary text-primary-foreground hover:-translate-y-0.5',
+                matched.includes(card.pairKey) && 'border-success bg-success/10 opacity-70',
+              )}
+              aria-label={isUp ? card.label : 'Carta oculta'}
+            >
+              {isUp ? card.label : '?'}
+            </button>
+          )
+        })}
+      </div>
+      <p className="text-center text-sm text-muted-foreground">
+        Encuentra las parejas palabra–traducción 🧠
+      </p>
+    </div>
+  )
+}
+
+
+
+==========================================================================================
+ARCHIVO: components/games/order-question.tsx
+==========================================================================================
+
+'use client'
+
+import { useMemo } from 'react'
+import { cn } from '@/lib/utils'
+import type { Question } from '@/lib/adventure/types'
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+export function OrderQuestion({
+  question,
+  chosen,
+  answered,
+  isCorrect,
+  onChoose,
+  onReset,
+}: {
+  question: Question
+  chosen: number[]
+  answered: boolean
+  isCorrect: boolean
+  onChoose: (index: number) => void
+  onReset: () => void
+}) {
+  const sequence = question.sequence ?? []
+  // Orden barajado estable durante la vida de la pregunta.
+  const shuffledIndexes = useMemo(
+    () => shuffle(sequence.map((_, i) => i)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [question.id],
+  )
+
+  return (
+    <div className="flex flex-col gap-6">
+      <h2 className="text-balance text-center font-display text-2xl font-extrabold text-foreground">
+        {question.prompt}
+      </h2>
+
+      {/* Zona de construcción */}
+      <div
+        className={cn(
+          'flex min-h-16 flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed p-4',
+          answered && isCorrect && 'border-success bg-success/10',
+          answered && !isCorrect && 'border-destructive bg-destructive/10',
+          !answered && 'border-border bg-muted/40',
+        )}
+      >
+        {chosen.length === 0 ? (
+          <span className="text-sm text-muted-foreground">Toca las palabras en orden…</span>
+        ) : (
+          chosen.map((idx, position) => (
+            <span
+              key={`${idx}-${position}`}
+              className="rounded-xl bg-primary px-4 py-2 font-bold text-primary-foreground"
+            >
+              {sequence[idx]}
+            </span>
+          ))
+        )}
+      </div>
+
+      {/* Palabras disponibles */}
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        {shuffledIndexes.map((idx) => {
+          const used = chosen.includes(idx)
+          return (
+            <button
+              key={idx}
+              type="button"
+              disabled={used || answered}
+              onClick={() => onChoose(idx)}
+              className={cn(
+                'rounded-xl border-2 border-border bg-card px-4 py-2 text-lg font-bold text-card-foreground transition-all hover:-translate-y-0.5 hover:border-primary/50',
+                used && 'pointer-events-none opacity-30',
+              )}
+            >
+              {sequence[idx]}
+            </button>
+          )
+        })}
+      </div>
+
+      {!answered && chosen.length > 0 && (
+        <button
+          type="button"
+          onClick={onReset}
+          className="mx-auto text-sm font-bold text-muted-foreground hover:text-foreground"
+        >
+          Reiniciar
+        </button>
+      )}
+
+      {answered && !isCorrect && (
+        <p className="text-center text-sm font-bold text-muted-foreground">
+          Orden correcto:{' '}
+          <span className="text-success">{sequence.join(' ')}</span>
+        </p>
+      )}
+    </div>
+  )
+}
+
+
+
+==========================================================================================
+ARCHIVO: components/games/speak-button.tsx
+==========================================================================================
+
+'use client'
+
+import { Volume2 } from 'lucide-react'
+
+/** Lee una palabra o frase en inglés con la voz del navegador. */
+export function SpeakButton({ text, label = 'Escuchar' }: { text: string; label?: string }) {
+  function speak() {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
+    window.speechSynthesis.cancel()
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.lang = 'en-US'
+    utterance.rate = 0.85
+    window.speechSynthesis.speak(utterance)
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={speak}
+      aria-label={label}
+      className="mx-auto inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-extrabold text-primary transition-all hover:bg-primary/20"
+    >
+      <Volume2 className="size-5" />
+      {label}
+    </button>
+  )
+}
+
+
+
+==========================================================================================
+ARCHIVO: lib/adventure/data.ts
+==========================================================================================
+
+import type {
+  Activity,
+  Badge,
+  Course,
+  Grade,
+  Question,
+  Student,
+  StudentAnalysis,
+  Subject,
+  SubjectProgress,
+  Teacher,
+} from './types'
+
+export const badges: Badge[] = [
+  { id: 'b-first', name: 'Primer paso', description: 'Completaste tu primera actividad', emoji: '🌱' },
+  { id: 'b-streak3', name: 'En racha', description: '3 días seguidos aprendiendo', emoji: '🔥' },
+  { id: 'b-streak7', name: 'Imparable', description: '7 días seguidos', emoji: '⚡' },
+  { id: 'b-perfect', name: 'Perfección', description: '100% de aciertos en una actividad', emoji: '🎯' },
+  { id: 'b-words50', name: 'Vocabulario', description: 'Aprendiste 50 palabras nuevas', emoji: '📚' },
+  { id: 'b-speed', name: 'Veloz', description: 'Ganaste un quiz contra reloj', emoji: '⏱️' },
+  { id: 'b-level5', name: 'Explorador', description: 'Alcanzaste el nivel 5', emoji: '🧭' },
+  { id: 'b-champion', name: 'Campeón de la clase', description: '#1 en el ranking semanal', emoji: '👑' },
+]
+
+export const courses: Course[] = [
+  { id: 'c-4a', name: 'Primaria', grade: 'Primaria', teacherId: 't-1', color: 'primary' },
+]
+
+export const subjects: Subject[] = [
+  { id: 's-english', name: 'Inglés', emoji: '🇬🇧', courseId: 'c-4a' },
+]
+
+export const teachers: Teacher[] = [
+  {
+    id: 't-1',
+    name: 'Miss Laura',
+    username: 'laura',
+    role: 'profesor',
+    avatar: '/avatars/teacher.png',
+    courseIds: ['c-4a'],
+    grade: '4',
+  },
+]
+
+export const students: Student[] = [
+  {
+    id: 'st-1',
+    name: 'Sofía Martínez',
+    username: 'sofia',
+    role: 'alumno',
+    avatar: '/avatars/sofia.png',
+    courseId: 'c-4a',
+    grade: '4',
+    level: 6,
+    xp: 1580,
+    streakDays: 5,
+    badgeIds: ['b-first', 'b-streak3', 'b-perfect', 'b-words50', 'b-level5'],
+  },
+  {
+    id: 'st-2',
+    name: 'Mateo Gómez',
+    username: 'mateo',
+    role: 'alumno',
+    avatar: '/avatars/mateo.png',
+    courseId: 'c-4a',
+    grade: '4',
+    level: 7,
+    xp: 1920,
+    streakDays: 8,
+    badgeIds: ['b-first', 'b-streak7', 'b-speed', 'b-level5'],
+  },
+  {
+    id: 'st-3',
+    name: 'Valentina Ruiz',
+    username: 'valentina',
+    role: 'alumno',
+    avatar: '/avatars/valentina.png',
+    courseId: 'c-4a',
+    grade: '4',
+    level: 8,
+    xp: 2350,
+    streakDays: 12,
+    badgeIds: ['b-first', 'b-streak7', 'b-perfect', 'b-champion', 'b-level5'],
+  },
+  {
+    id: 'st-4',
+    name: 'Thiago Díaz',
+    username: 'thiago',
+    role: 'alumno',
+    avatar: '/avatars/thiago.png',
+    courseId: 'c-4a',
+    grade: '4',
+    level: 4,
+    xp: 980,
+    streakDays: 2,
+    badgeIds: ['b-first', 'b-streak3'],
+  },
+  {
+    id: 'st-5',
+    name: 'Emma López',
+    username: 'emma',
+    role: 'alumno',
+    avatar: '/avatars/emma.png',
+    courseId: 'c-4a',
+    grade: '4',
+    level: 3,
+    xp: 720,
+    streakDays: 1,
+    badgeIds: ['b-first'],
+  },
+]
+
+export const subjectProgress: Record<string, SubjectProgress[]> = {
+  'st-1': [
+    {
+      subjectId: 's-english',
+      progressPct: 68,
+      level: 6,
+      activitiesTotal: 9,
+      activitiesCompleted: 6,
+      xpEarned: 1580,
+    },
+  ],
+}
+
+// --- Juegos por nivel (1.º–2.º, 3.º–4.º y 5.º–6.º) ---
+// Reglas para que ningún juego regale la respuesta:
+//  - el enunciado nunca contiene la respuesta (las pistas se muestran SOLO después de contestar);
+//  - las imágenes de las opciones no llevan texto (el nombre aparece al responder);
+//  - las opciones se mezclan al jugar (ver prepareQuestion en game-player.tsx).
+const IMG = '/games/ref/'
+
+const FAMILY = ['mum', 'dad', 'grandma', 'grandpa', 'sister', 'brother', 'auntie']
+function familyQuestion(id: string, target: string, others: string[]): Question {
+  const names = [target, ...others]
+  return {
+    id,
+    prompt: `Listen and tap: ${target}`,
+    speak: target,
+    options: names,
+    optionImages: names.map((n) => `${IMG}family-${n}.png`),
+    answerIndex: 0,
+  }
+}
+
+const BODY_PARTS = ['head', 'arm', 'hand', 'body', 'leg', 'foot']
+function bodyQuestion(id: string, part: string): Question {
+  return {
+    id,
+    prompt: `Tap the ${part}.`,
+    speak: part,
+    options: BODY_PARTS,
+    answerIndex: BODY_PARTS.indexOf(part),
+    bodyPart: true,
+    keepOrder: true,
+  }
+}
+
+function sizeQuestion(id: string, item: string, ask: 'big' | 'small'): Question {
+  return {
+    id,
+    prompt: ask === 'big' ? 'Tap the BIG one.' : 'Tap the SMALL one.',
+    speak: ask,
+    options: ['big', 'small'],
+    optionImages: [`${IMG}${item}-big.png`, `${IMG}${item}-small.png`],
+    answerIndex: ask === 'big' ? 0 : 1,
+  }
+}
+
+function lengthQuestion(id: string, item: string, ask: 'short' | 'long'): Question {
+  return {
+    id,
+    prompt: ask === 'long' ? `Which ${item} is LONG?` : `Which ${item} is SHORT?`,
+    speak: ask,
+    options: ['short', 'long'],
+    optionImages: [`${IMG}short-${item}.svg`, `${IMG}long-${item}.svg`],
+    optionLayout: 'stack',
+    answerIndex: ask === 'long' ? 1 : 0,
+  }
+}
+
+const FOOD = ['apple', 'burger', 'broccoli', 'fries', 'ice cream', 'fish']
+const FOOD_IMG: Record<string, string> = {
+  apple: `${IMG}food-apple.png`,
+  burger: `${IMG}food-burger.png`,
+  broccoli: `${IMG}food-broccoli.png`,
+  fries: `${IMG}food-fries.png`,
+  'ice cream': `${IMG}food-icecream.png`,
+  fish: `${IMG}food-fish.png`,
+}
+function foodQuestion(id: string, prompt: string, options: string[], correct: string[], hint?: string): Question {
+  const multi = correct.length > 1
+  return {
+    id,
+    prompt,
+    options,
+    optionImages: options.map((o) => FOOD_IMG[o]),
+    ...(multi
+      ? { answerIndexes: correct.map((c) => options.indexOf(c)) }
+      : { answerIndex: options.indexOf(correct[0]) }),
+    hint,
+  }
+}
+
+const ANIMAL_IMG: Record<string, string> = {
+  dog: `${IMG}animal-dog.png`,
+  cat: `${IMG}animal-cat.png`,
+  rabbit: `${IMG}animal-rabbit.png`,
+  bird: `${IMG}animal-bird.png`,
+}
+function animalChoice(id: string, prompt: string, options: string[], correct: string, speak?: string): Question {
+  return {
+    id,
+    prompt,
+    speak,
+    options,
+    optionImages: options.map((o) => ANIMAL_IMG[o]),
+    answerIndex: options.indexOf(correct),
+  }
+}
+
+const CAN_OPTIONS = ['can', 'can’t']
+function canQuestion(id: string, image: string, prompt: string, can: boolean): Question {
+  return { id, prompt, image, options: CAN_OPTIONS, answerIndex: can ? 0 : 1, keepOrder: true }
+}
+
+const EMMA_TEXT =
+  'Emma is eating healthy food.\nShe can eat fruit and vegetables.\nShe can’t eat chips and sweets.'
+
+const referenceGames: Record<'early' | 'middle' | 'upper', Activity[]> = {
+  // 1.º–2.º
+  early: [
+    {
+      id: 'g-family',
+      title: 'Family',
+      description: 'Listen and choose the correct family member.',
+      type: 'image-question',
+      difficulty: 'facil',
+      subjectId: 's-english',
+      grade: '1',
+      xpReward: 10,
+      questions: [
+        familyQuestion('q1', 'mum', ['dad', 'grandpa', 'brother']),
+        familyQuestion('q2', 'dad', ['grandma', 'sister', 'grandpa']),
+        familyQuestion('q3', 'grandma', ['dad', 'brother', 'grandpa']),
+        familyQuestion('q4', 'brother', ['mum', 'grandma', 'grandpa']),
+        familyQuestion('q5', 'sister', ['dad', 'grandma', 'brother']),
+        familyQuestion('q6', 'auntie', ['dad', 'grandpa', 'brother']),
+      ],
+    },
+    {
+      id: 'g-body',
+      title: 'Parts of the body',
+      description: 'Tap the correct part of the body.',
+      type: 'image-question',
+      difficulty: 'facil',
+      subjectId: 's-english',
+      grade: '1',
+      xpReward: 10,
+      questions: [
+        bodyQuestion('q1', 'head'),
+        bodyQuestion('q2', 'hand'),
+        bodyQuestion('q3', 'leg'),
+        bodyQuestion('q4', 'arm'),
+        bodyQuestion('q5', 'foot'),
+        bodyQuestion('q6', 'body'),
+      ],
+    },
+    {
+      id: 'g-bigsmall',
+      title: 'Big or small',
+      description: 'Choose the big or small one.',
+      type: 'image-question',
+      difficulty: 'facil',
+      subjectId: 's-english',
+      grade: '1',
+      xpReward: 10,
+      questions: [
+        sizeQuestion('q1', 'elephant', 'big'),
+        sizeQuestion('q2', 'car', 'small'),
+        sizeQuestion('q3', 'apple', 'big'),
+        sizeQuestion('q4', 'cat', 'small'),
+      ],
+    },
+  ],
+  // 3.º–4.º
+  middle: [
+    {
+      id: 'g-shortlong',
+      title: 'Short or long',
+      description: 'Look at the pictures and choose: short or long.',
+      type: 'image-question',
+      difficulty: 'medio',
+      subjectId: 's-english',
+      grade: '3',
+      xpReward: 15,
+      questions: [
+        lengthQuestion('q1', 'pencil', 'long'),
+        lengthQuestion('q2', 'train', 'short'),
+        lengthQuestion('q3', 'scarf', 'long'),
+        lengthQuestion('q4', 'pencil', 'short'),
+      ],
+    },
+    {
+      id: 'g-food',
+      title: 'Food',
+      description: 'Choose the healthy food.',
+      type: 'image-question',
+      difficulty: 'medio',
+      subjectId: 's-english',
+      grade: '3',
+      xpReward: 15,
+      questions: [
+        foodQuestion('q1', 'Choose the healthy food.', FOOD, ['apple', 'broccoli', 'fish'], 'Fruit, vegetables and fish are healthy food.'),
+        foodQuestion('q2', 'Which one is a fruit?', ['apple', 'burger', 'fries', 'fish'], ['apple']),
+        foodQuestion('q3', 'Which one is a vegetable?', ['ice cream', 'broccoli', 'burger', 'fries'], ['broccoli']),
+        foodQuestion('q4', 'Choose the food that is NOT healthy.', FOOD, ['burger', 'fries', 'ice cream'], 'Burgers, chips and sweets are not so healthy.'),
+      ],
+    },
+    {
+      id: 'g-animals',
+      title: 'Animals (pets)',
+      description: 'Match the animal with the correct name.',
+      type: 'match-concepts',
+      difficulty: 'medio',
+      subjectId: 's-english',
+      grade: '3',
+      xpReward: 15,
+      questions: [
+        {
+          id: 'q1',
+          prompt: 'Match the animal with the correct name.',
+          pairs: [
+            { left: 'dog', right: 'dog', leftImage: ANIMAL_IMG.dog },
+            { left: 'cat', right: 'cat', leftImage: ANIMAL_IMG.cat },
+            { left: 'rabbit', right: 'rabbit', leftImage: ANIMAL_IMG.rabbit },
+            { left: 'bird', right: 'bird', leftImage: ANIMAL_IMG.bird },
+          ],
+        },
+        animalChoice('q2', 'Which animal can fly?', ['dog', 'bird', 'cat', 'rabbit'], 'bird'),
+        animalChoice('q3', 'Which animal says “meow”?', ['dog', 'rabbit', 'cat', 'bird'], 'cat'),
+        animalChoice('q4', 'Listen and tap the animal.', ['cat', 'rabbit', 'dog', 'bird'], 'rabbit', 'rabbit'),
+      ],
+    },
+  ],
+  // 5.º–6.º
+  upper: [
+    {
+      id: 'g-cancant',
+      title: 'Can / can’t',
+      description: 'Look at the pictures and choose can or can’t.',
+      type: 'multiple-choice',
+      difficulty: 'dificil',
+      subjectId: 's-english',
+      grade: '5',
+      xpReward: 20,
+      questions: [
+        canQuestion('q1', `${IMG}can-bike.png`, 'Look at the picture: She ___ ride a bike.', true),
+        canQuestion('q2', `${IMG}can-swim.png`, 'Look at the picture: He ___ swim.', true),
+        canQuestion('q3', ANIMAL_IMG.bird, 'Look at the picture: A bird ___ fly.', true),
+        canQuestion('q4', `${IMG}elephant-big.png`, 'Look at the picture: An elephant ___ fly.', false),
+        canQuestion('q5', ANIMAL_IMG.cat, 'Look at the picture: A cat ___ drive a car.', false),
+      ],
+    },
+    {
+      id: 'g-extra',
+      title: 'Extra challenge',
+      description: 'Read and choose the correct answer.',
+      type: 'multiple-choice',
+      difficulty: 'dificil',
+      subjectId: 's-english',
+      grade: '5',
+      xpReward: 25,
+      questions: [
+        {
+          id: 'q1',
+          prompt: 'What is she eating?',
+          image: `${IMG}emma.png`,
+          passage: EMMA_TEXT,
+          options: ['A burger', 'Salad', 'Pizza', 'Ice cream'],
+          answerIndex: 1,
+          hint: 'Emma can eat fruit and vegetables.',
+        },
+        {
+          id: 'q2',
+          prompt: 'What can Emma eat?',
+          passage: EMMA_TEXT,
+          options: ['Chips and sweets', 'Fruit and vegetables', 'Burgers and pizza', 'Only ice cream'],
+          answerIndex: 1,
+        },
+        {
+          id: 'q3',
+          prompt: 'What can’t Emma eat?',
+          passage: EMMA_TEXT,
+          options: ['Fruit', 'Vegetables', 'Chips and sweets', 'Salad'],
+          answerIndex: 2,
+        },
+      ],
+    },
+  ],
+}
+
+export const activities: Activity[] = [
+  {
+    id: 'a-1',
+    title: 'Animales / Animals',
+    description: 'Aprende los nombres de los animales en inglés.',
+    type: 'multiple-choice',
+    difficulty: 'facil',
+    subjectId: 's-english',
+    grade: '4',
+    xpReward: 60,
+    questions: [
+      {
+        id: 'q1',
+        prompt: '¿Cómo se dice "perro" en inglés?',
+        hint: 'Es la mascota más común',
+        options: ['Cat', 'Dog', 'Bird', 'Fish'],
+        answerIndex: 1,
+      },
+      {
+        id: 'q2',
+        prompt: '¿Cómo se dice "gato"?',
+        options: ['Dog', 'Horse', 'Cat', 'Cow'],
+        answerIndex: 2,
+      },
+      {
+        id: 'q3',
+        prompt: 'Elige la traducción de "pájaro"',
+        options: ['Bird', 'Bear', 'Bee', 'Bat'],
+        answerIndex: 0,
+      },
+    ],
+  },
+  {
+    id: 'a-2',
+    title: 'Colores / Colors',
+    description: '¿Verdadero o falso? Repasa los colores.',
+    type: 'true-false',
+    difficulty: 'facil',
+    subjectId: 's-english',
+    grade: '4',
+    xpReward: 50,
+    questions: [
+      { id: 'q1', prompt: '"Red" significa rojo', options: ['Verdadero', 'Falso'], answerIndex: 0 },
+      { id: 'q2', prompt: '"Blue" significa verde', options: ['Verdadero', 'Falso'], answerIndex: 1 },
+      { id: 'q3', prompt: '"Yellow" significa amarillo', options: ['Verdadero', 'Falso'], answerIndex: 0 },
+      { id: 'q4', prompt: '"Black" significa blanco', options: ['Verdadero', 'Falso'], answerIndex: 1 },
+    ],
+  },
+  {
+    id: 'a-3',
+    title: 'Completa la palabra',
+    description: 'Escribe la palabra en inglés que falta.',
+    type: 'complete-word',
+    difficulty: 'medio',
+    subjectId: 's-english',
+    grade: '4',
+    xpReward: 80,
+    questions: [
+      { id: 'q1', prompt: 'Casa en inglés: h___', hint: 'house', answer: 'house' },
+      { id: 'q2', prompt: 'Escuela en inglés: s_____', hint: 'school', answer: 'school' },
+      { id: 'q3', prompt: 'Libro en inglés: b___', hint: 'book', answer: 'book' },
+    ],
+  },
+  {
+    id: 'a-4',
+    title: 'Une los conceptos',
+    description: 'Conecta cada palabra con su traducción.',
+    type: 'match-concepts',
+    difficulty: 'medio',
+    subjectId: 's-english',
+    grade: '4',
+    xpReward: 90,
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'Une cada palabra en inglés con su significado',
+        pairs: [
+          { left: 'Apple', right: 'Manzana' },
+          { left: 'Water', right: 'Agua' },
+          { left: 'Sun', right: 'Sol' },
+          { left: 'Friend', right: 'Amigo' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'a-5',
+    title: 'Ordena la oración',
+    description: 'Coloca las palabras en el orden correcto.',
+    type: 'order-elements',
+    difficulty: 'dificil',
+    subjectId: 's-english',
+    grade: '4',
+    xpReward: 100,
+    questions: [
+      { id: 'q1', prompt: 'Ordena: "Me llamo Ana"', sequence: ['My', 'name', 'is', 'Ana'] },
+      { id: 'q2', prompt: 'Ordena: "Tengo un gato"', sequence: ['I', 'have', 'a', 'cat'] },
+    ],
+  },
+  {
+    id: 'a-6',
+    title: 'Adivina la imagen',
+    description: 'Mira la imagen y elige la palabra correcta.',
+    type: 'image-question',
+    difficulty: 'facil',
+    subjectId: 's-english',
+    grade: '4',
+    xpReward: 70,
+    questions: [
+      {
+        id: 'q1',
+        prompt: '¿Qué es esto en inglés?',
+        image: '/games/apple.png',
+        options: ['Apple', 'Orange', 'Banana', 'Grape'],
+        answerIndex: 0,
+      },
+      {
+        id: 'q2',
+        prompt: '¿Qué animal es?',
+        image: '/games/cat.png',
+        options: ['Dog', 'Cat', 'Rabbit', 'Mouse'],
+        answerIndex: 1,
+      },
+    ],
+  },
+  {
+    id: 'a-7',
+    title: 'Juego de memoria',
+    description: 'Encuentra las parejas palabra–traducción.',
+    type: 'memory',
+    difficulty: 'medio',
+    subjectId: 's-english',
+    grade: '4',
+    xpReward: 85,
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'Encuentra las parejas',
+        pairs: [
+          { left: 'Cat', right: 'Gato' },
+          { left: 'Dog', right: 'Perro' },
+          { left: 'Sun', right: 'Sol' },
+          { left: 'Book', right: 'Libro' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'a-8',
+    title: 'Quiz contra reloj',
+    description: 'Responde todo lo que puedas antes de que acabe el tiempo.',
+    type: 'timed-quiz',
+    difficulty: 'dificil',
+    subjectId: 's-english',
+    grade: '4',
+    xpReward: 120,
+    timeLimitSec: 45,
+    questions: [
+      { id: 'q1', prompt: '"One" es...', options: ['Uno', 'Dos', 'Tres'], answerIndex: 0 },
+      { id: 'q2', prompt: '"Three" es...', options: ['Dos', 'Tres', 'Cuatro'], answerIndex: 1 },
+      { id: 'q3', prompt: '"Five" es...', options: ['Cinco', 'Seis', 'Siete'], answerIndex: 0 },
+      { id: 'q4', prompt: '"Ten" es...', options: ['Nueve', 'Diez', 'Once'], answerIndex: 1 },
+      { id: 'q5', prompt: '"Seven" es...', options: ['Siete', 'Ocho', 'Seis'], answerIndex: 0 },
+    ],
+  },
+]
+
+// --- Datos de análisis para el portal del profesor ---
+// Simulados para demostrar la vista de análisis detallado por alumno.
+
+function statusForPct(pct: number): 'dominado' | 'en-progreso' | 'necesita-refuerzo' {
+  if (pct >= 80) return 'dominado'
+  if (pct >= 60) return 'en-progreso'
+  return 'necesita-refuerzo'
+}
+
+export const studentAnalyses: Record<string, StudentAnalysis> = {
+  'st-1': {
+    studentId: 'st-1',
+    xp: 1580,
+    level: 6,
+    streakDays: 5,
+    overallProgressPct: 68,
+    activitiesCompleted: 6,
+    activitiesPending: 3,
+    correctPct: 78,
+    incorrectPct: 22,
+    totalAttempts: 14,
+    avgTimeSec: 52,
+    performance: [
+      { date: 'Sem 1', score: 55 },
+      { date: 'Sem 2', score: 62 },
+      { date: 'Sem 3', score: 70 },
+      { date: 'Sem 4', score: 68 },
+      { date: 'Sem 5', score: 78 },
+    ],
+    skills: [
+      { skill: 'Vocabulary', pct: 85, status: 'dominado' },
+      { skill: 'Grammar', pct: 58, status: 'en-progreso' },
+      { skill: 'Reading', pct: 72, status: 'en-progreso' },
+      { skill: 'Listening', pct: 80, status: 'dominado' },
+      { skill: 'Writing', pct: 54, status: 'necesita-refuerzo' },
+    ],
+    topics: [
+      { topic: 'Present Simple', skill: 'Grammar', pct: 52, status: 'necesita-refuerzo' },
+      { topic: 'Verb to be', skill: 'Grammar', pct: 86, status: 'dominado' },
+      { topic: 'Have got', skill: 'Grammar', pct: 68, status: 'en-progreso' },
+      { topic: 'Animals', skill: 'Vocabulary', pct: 90, status: 'dominado' },
+      { topic: 'Colors', skill: 'Vocabulary', pct: 82, status: 'dominado' },
+      { topic: 'Numbers', skill: 'Vocabulary', pct: 78, status: 'en-progreso' },
+      { topic: 'Short texts', skill: 'Reading', pct: 72, status: 'en-progreso' },
+      { topic: 'Instructions', skill: 'Listening', pct: 80, status: 'dominado' },
+      { topic: 'Short sentences', skill: 'Writing', pct: 54, status: 'necesita-refuerzo' },
+    ],
+    recentActivities: [
+      { activityId: 'a-1', title: 'Animales / Animals', score: 100, correctCount: 3, totalCount: 3, timeSec: 35, date: '2026-09-24', status: 'completada' },
+      { activityId: 'a-2', title: 'Colores / Colors', score: 75, correctCount: 3, totalCount: 4, timeSec: 40, date: '2026-09-22', status: 'completada' },
+      { activityId: 'a-3', title: 'Completa la palabra', score: 67, correctCount: 2, totalCount: 3, timeSec: 68, date: '2026-09-20', status: 'completada' },
+      { activityId: 'a-4', title: 'Une los conceptos', score: 75, correctCount: 3, totalCount: 4, timeSec: 55, date: '2026-09-18', status: 'completada' },
+      { activityId: 'a-5', title: 'Ordena la oración', score: 50, correctCount: 1, totalCount: 2, timeSec: 72, date: '2026-09-15', status: 'completada' },
+      { activityId: 'a-6', title: 'Adivina la imagen', score: 100, correctCount: 2, totalCount: 2, timeSec: 30, date: '2026-09-12', status: 'completada' },
+      { activityId: 'a-7', title: 'Juego de memoria', score: 0, correctCount: 0, totalCount: 0, timeSec: 0, date: '', status: 'pendiente' },
+      { activityId: 'a-8', title: 'Quiz contra reloj', score: 0, correctCount: 0, totalCount: 0, timeSec: 0, date: '', status: 'pendiente' },
+    ],
+    weakTopics: [
+      { topic: 'Present Simple', skill: 'Grammar', pct: 52, status: 'necesita-refuerzo' },
+      { topic: 'Short sentences', skill: 'Writing', pct: 54, status: 'necesita-refuerzo' },
+      { topic: 'Have got', skill: 'Grammar', pct: 68, status: 'en-progreso' },
+    ],
+    recommendation:
+      'Sofía tiene buen vocabulario y comprensión auditiva. Conviene reforzar Present Simple y escritura de oraciones cortas con ejercicios prácticos guiados.',
+  },
+  'st-2': {
+    studentId: 'st-2',
+    xp: 1920,
+    level: 7,
+    streakDays: 8,
+    overallProgressPct: 75,
+    activitiesCompleted: 7,
+    activitiesPending: 2,
+    correctPct: 83,
+    incorrectPct: 17,
+    totalAttempts: 16,
+    avgTimeSec: 44,
+    performance: [
+      { date: 'Sem 1', score: 68 },
+      { date: 'Sem 2', score: 74 },
+      { date: 'Sem 3', score: 78 },
+      { date: 'Sem 4', score: 82 },
+      { date: 'Sem 5', score: 85 },
+    ],
+    skills: [
+      { skill: 'Vocabulary', pct: 88, status: 'dominado' },
+      { skill: 'Grammar', pct: 72, status: 'en-progreso' },
+      { skill: 'Reading', pct: 80, status: 'dominado' },
+      { skill: 'Listening', pct: 75, status: 'en-progreso' },
+      { skill: 'Writing', pct: 68, status: 'en-progreso' },
+    ],
+    topics: [
+      { topic: 'Present Simple', skill: 'Grammar', pct: 72, status: 'en-progreso' },
+      { topic: 'Verb to be', skill: 'Grammar', pct: 90, status: 'dominado' },
+      { topic: 'Have got', skill: 'Grammar', pct: 75, status: 'en-progreso' },
+      { topic: 'Animals', skill: 'Vocabulary', pct: 92, status: 'dominado' },
+      { topic: 'Colors', skill: 'Vocabulary', pct: 88, status: 'dominado' },
+      { topic: 'Numbers', skill: 'Vocabulary', pct: 85, status: 'dominado' },
+      { topic: 'Short texts', skill: 'Reading', pct: 80, status: 'dominado' },
+      { topic: 'Instructions', skill: 'Listening', pct: 75, status: 'en-progreso' },
+      { topic: 'Short sentences', skill: 'Writing', pct: 68, status: 'en-progreso' },
+    ],
+    recentActivities: [
+      { activityId: 'a-1', title: 'Animales / Animals', score: 100, correctCount: 3, totalCount: 3, timeSec: 28, date: '2026-09-24', status: 'completada' },
+      { activityId: 'a-2', title: 'Colores / Colors', score: 100, correctCount: 4, totalCount: 4, timeSec: 32, date: '2026-09-23', status: 'completada' },
+      { activityId: 'a-3', title: 'Completa la palabra', score: 100, correctCount: 3, totalCount: 3, timeSec: 45, date: '2026-09-21', status: 'completada' },
+      { activityId: 'a-4', title: 'Une los conceptos', score: 100, correctCount: 4, totalCount: 4, timeSec: 50, date: '2026-09-19', status: 'completada' },
+      { activityId: 'a-5', title: 'Ordena la oración', score: 50, correctCount: 1, totalCount: 2, timeSec: 60, date: '2026-09-17', status: 'completada' },
+      { activityId: 'a-6', title: 'Adivina la imagen', score: 100, correctCount: 2, totalCount: 2, timeSec: 25, date: '2026-09-14', status: 'completada' },
+      { activityId: 'a-7', title: 'Juego de memoria', score: 75, correctCount: 3, totalCount: 4, timeSec: 48, date: '2026-09-10', status: 'completada' },
+      { activityId: 'a-8', title: 'Quiz contra reloj', score: 0, correctCount: 0, totalCount: 0, timeSec: 0, date: '', status: 'pendiente' },
+    ],
+    weakTopics: [
+      { topic: 'Short sentences', skill: 'Writing', pct: 68, status: 'en-progreso' },
+      { topic: 'Instructions', skill: 'Listening', pct: 75, status: 'en-progreso' },
+      { topic: 'Present Simple', skill: 'Grammar', pct: 72, status: 'en-progreso' },
+    ],
+    recommendation:
+      'Mateo va muy bien en vocabulario y lectura. Para llegar al dominio total, conviene practicar escritura de oraciones cortas y comprensión auditiva con audios más variados.',
+  },
+  'st-3': {
+    studentId: 'st-3',
+    xp: 2350,
+    level: 8,
+    streakDays: 12,
+    overallProgressPct: 88,
+    activitiesCompleted: 8,
+    activitiesPending: 1,
+    correctPct: 92,
+    incorrectPct: 8,
+    totalAttempts: 20,
+    avgTimeSec: 38,
+    performance: [
+      { date: 'Sem 1', score: 80 },
+      { date: 'Sem 2', score: 85 },
+      { date: 'Sem 3', score: 88 },
+      { date: 'Sem 4', score: 90 },
+      { date: 'Sem 5', score: 92 },
+    ],
+    skills: [
+      { skill: 'Vocabulary', pct: 95, status: 'dominado' },
+      { skill: 'Grammar', pct: 88, status: 'dominado' },
+      { skill: 'Reading', pct: 90, status: 'dominado' },
+      { skill: 'Listening', pct: 85, status: 'dominado' },
+      { skill: 'Writing', pct: 82, status: 'dominado' },
+    ],
+    topics: [
+      { topic: 'Present Simple', skill: 'Grammar', pct: 88, status: 'dominado' },
+      { topic: 'Verb to be', skill: 'Grammar', pct: 96, status: 'dominado' },
+      { topic: 'Have got', skill: 'Grammar', pct: 90, status: 'dominado' },
+      { topic: 'Animals', skill: 'Vocabulary', pct: 98, status: 'dominado' },
+      { topic: 'Colors', skill: 'Vocabulary', pct: 95, status: 'dominado' },
+      { topic: 'Numbers', skill: 'Vocabulary', pct: 92, status: 'dominado' },
+      { topic: 'Short texts', skill: 'Reading', pct: 90, status: 'dominado' },
+      { topic: 'Instructions', skill: 'Listening', pct: 85, status: 'dominado' },
+      { topic: 'Short sentences', skill: 'Writing', pct: 82, status: 'dominado' },
+    ],
+    recentActivities: [
+      { activityId: 'a-1', title: 'Animales / Animals', score: 100, correctCount: 3, totalCount: 3, timeSec: 22, date: '2026-09-24', status: 'completada' },
+      { activityId: 'a-2', title: 'Colores / Colors', score: 100, correctCount: 4, totalCount: 4, timeSec: 25, date: '2026-09-23', status: 'completada' },
+      { activityId: 'a-3', title: 'Completa la palabra', score: 100, correctCount: 3, totalCount: 3, timeSec: 35, date: '2026-09-21', status: 'completada' },
+      { activityId: 'a-4', title: 'Une los conceptos', score: 100, correctCount: 4, totalCount: 4, timeSec: 40, date: '2026-09-19', status: 'completada' },
+      { activityId: 'a-5', title: 'Ordena la oración', score: 100, correctCount: 2, totalCount: 2, timeSec: 45, date: '2026-09-17', status: 'completada' },
+      { activityId: 'a-6', title: 'Adivina la imagen', score: 100, correctCount: 2, totalCount: 2, timeSec: 20, date: '2026-09-14', status: 'completada' },
+      { activityId: 'a-7', title: 'Juego de memoria', score: 100, correctCount: 4, totalCount: 4, timeSec: 38, date: '2026-09-10', status: 'completada' },
+      { activityId: 'a-8', title: 'Quiz contra reloj', score: 80, correctCount: 4, totalCount: 5, timeSec: 38, date: '2026-09-07', status: 'completada' },
+    ],
+    weakTopics: [
+      { topic: 'Short sentences', skill: 'Writing', pct: 82, status: 'dominado' },
+      { topic: 'Instructions', skill: 'Listening', pct: 85, status: 'dominado' },
+      { topic: 'Present Simple', skill: 'Grammar', pct: 88, status: 'dominado' },
+    ],
+    recommendation:
+      'Valentina domina todas las habilidades. Se sugieren actividades de desafío avanzado y escritura libre para mantenerla motivada.',
+  },
+  'st-4': {
+    studentId: 'st-4',
+    xp: 980,
+    level: 4,
+    streakDays: 2,
+    overallProgressPct: 42,
+    activitiesCompleted: 4,
+    activitiesPending: 5,
+    correctPct: 55,
+    incorrectPct: 45,
+    totalAttempts: 9,
+    avgTimeSec: 68,
+    performance: [
+      { date: 'Sem 1', score: 40 },
+      { date: 'Sem 2', score: 45 },
+      { date: 'Sem 3', score: 52 },
+      { date: 'Sem 4', score: 50 },
+      { date: 'Sem 5', score: 55 },
+    ],
+    skills: [
+      { skill: 'Vocabulary', pct: 62, status: 'en-progreso' },
+      { skill: 'Grammar', pct: 42, status: 'necesita-refuerzo' },
+      { skill: 'Reading', pct: 55, status: 'necesita-refuerzo' },
+      { skill: 'Listening', pct: 58, status: 'necesita-refuerzo' },
+      { skill: 'Writing', pct: 40, status: 'necesita-refuerzo' },
+    ],
+    topics: [
+      { topic: 'Present Simple', skill: 'Grammar', pct: 38, status: 'necesita-refuerzo' },
+      { topic: 'Verb to be', skill: 'Grammar', pct: 55, status: 'necesita-refuerzo' },
+      { topic: 'Have got', skill: 'Grammar', pct: 42, status: 'necesita-refuerzo' },
+      { topic: 'Animals', skill: 'Vocabulary', pct: 70, status: 'en-progreso' },
+      { topic: 'Colors', skill: 'Vocabulary', pct: 60, status: 'en-progreso' },
+      { topic: 'Numbers', skill: 'Vocabulary', pct: 55, status: 'necesita-refuerzo' },
+      { topic: 'Short texts', skill: 'Reading', pct: 55, status: 'necesita-refuerzo' },
+      { topic: 'Instructions', skill: 'Listening', pct: 58, status: 'necesita-refuerzo' },
+      { topic: 'Short sentences', skill: 'Writing', pct: 40, status: 'necesita-refuerzo' },
+    ],
+    recentActivities: [
+      { activityId: 'a-1', title: 'Animales / Animals', score: 67, correctCount: 2, totalCount: 3, timeSec: 55, date: '2026-09-22', status: 'completada' },
+      { activityId: 'a-2', title: 'Colores / Colors', score: 50, correctCount: 2, totalCount: 4, timeSec: 60, date: '2026-09-20', status: 'completada' },
+      { activityId: 'a-3', title: 'Completa la palabra', score: 33, correctCount: 1, totalCount: 3, timeSec: 80, date: '2026-09-18', status: 'completada' },
+      { activityId: 'a-6', title: 'Adivina la imagen', score: 100, correctCount: 2, totalCount: 2, timeSec: 40, date: '2026-09-15', status: 'completada' },
+      { activityId: 'a-4', title: 'Une los conceptos', score: 0, correctCount: 0, totalCount: 0, timeSec: 0, date: '', status: 'pendiente' },
+      { activityId: 'a-5', title: 'Ordena la oración', score: 0, correctCount: 0, totalCount: 0, timeSec: 0, date: '', status: 'pendiente' },
+      { activityId: 'a-7', title: 'Juego de memoria', score: 0, correctCount: 0, totalCount: 0, timeSec: 0, date: '', status: 'pendiente' },
+      { activityId: 'a-8', title: 'Quiz contra reloj', score: 0, correctCount: 0, totalCount: 0, timeSec: 0, date: '', status: 'pendiente' },
+    ],
+    weakTopics: [
+      { topic: 'Present Simple', skill: 'Grammar', pct: 38, status: 'necesita-refuerzo' },
+      { topic: 'Short sentences', skill: 'Writing', pct: 40, status: 'necesita-refuerzo' },
+      { topic: 'Have got', skill: 'Grammar', pct: 42, status: 'necesita-refuerzo' },
+    ],
+    recommendation:
+      'Thiago necesita refuerzo general. Se sugiere empezar con actividades de vocabulario visual (animales, colores) y luego introducir Present Simple con ejercicios muy guiados.',
+  },
+  'st-5': {
+    studentId: 'st-5',
+    xp: 720,
+    level: 3,
+    streakDays: 1,
+    overallProgressPct: 28,
+    activitiesCompleted: 3,
+    activitiesPending: 6,
+    correctPct: 48,
+    incorrectPct: 52,
+    totalAttempts: 6,
+    avgTimeSec: 75,
+    performance: [
+      { date: 'Sem 1', score: 30 },
+      { date: 'Sem 2', score: 35 },
+      { date: 'Sem 3', score: 42 },
+      { date: 'Sem 4', score: 45 },
+      { date: 'Sem 5', score: 48 },
+    ],
+    skills: [
+      { skill: 'Vocabulary', pct: 52, status: 'necesita-refuerzo' },
+      { skill: 'Grammar', pct: 35, status: 'necesita-refuerzo' },
+      { skill: 'Reading', pct: 45, status: 'necesita-refuerzo' },
+      { skill: 'Listening', pct: 50, status: 'necesita-refuerzo' },
+      { skill: 'Writing', pct: 30, status: 'necesita-refuerzo' },
+    ],
+    topics: [
+      { topic: 'Present Simple', skill: 'Grammar', pct: 30, status: 'necesita-refuerzo' },
+      { topic: 'Verb to be', skill: 'Grammar', pct: 45, status: 'necesita-refuerzo' },
+      { topic: 'Have got', skill: 'Grammar', pct: 38, status: 'necesita-refuerzo' },
+      { topic: 'Animals', skill: 'Vocabulary', pct: 60, status: 'en-progreso' },
+      { topic: 'Colors', skill: 'Vocabulary', pct: 50, status: 'necesita-refuerzo' },
+      { topic: 'Numbers', skill: 'Vocabulary', pct: 45, status: 'necesita-refuerzo' },
+      { topic: 'Short texts', skill: 'Reading', pct: 45, status: 'necesita-refuerzo' },
+      { topic: 'Instructions', skill: 'Listening', pct: 50, status: 'necesita-refuerzo' },
+      { topic: 'Short sentences', skill: 'Writing', pct: 30, status: 'necesita-refuerzo' },
+    ],
+    recentActivities: [
+      { activityId: 'a-1', title: 'Animales / Animals', score: 67, correctCount: 2, totalCount: 3, timeSec: 60, date: '2026-09-21', status: 'completada' },
+      { activityId: 'a-2', title: 'Colores / Colors', score: 50, correctCount: 2, totalCount: 4, timeSec: 70, date: '2026-09-19', status: 'completada' },
+      { activityId: 'a-6', title: 'Adivina la imagen', score: 50, correctCount: 1, totalCount: 2, timeSec: 45, date: '2026-09-16', status: 'completada' },
+      { activityId: 'a-3', title: 'Completa la palabra', score: 0, correctCount: 0, totalCount: 0, timeSec: 0, date: '', status: 'pendiente' },
+      { activityId: 'a-4', title: 'Une los conceptos', score: 0, correctCount: 0, totalCount: 0, timeSec: 0, date: '', status: 'pendiente' },
+      { activityId: 'a-5', title: 'Ordena la oración', score: 0, correctCount: 0, totalCount: 0, timeSec: 0, date: '', status: 'pendiente' },
+      { activityId: 'a-7', title: 'Juego de memoria', score: 0, correctCount: 0, totalCount: 0, timeSec: 0, date: '', status: 'pendiente' },
+      { activityId: 'a-8', title: 'Quiz contra reloj', score: 0, correctCount: 0, totalCount: 0, timeSec: 0, date: '', status: 'pendiente' },
+    ],
+    weakTopics: [
+      { topic: 'Present Simple', skill: 'Grammar', pct: 30, status: 'necesita-refuerzo' },
+      { topic: 'Short sentences', skill: 'Writing', pct: 30, status: 'necesita-refuerzo' },
+      { topic: 'Have got', skill: 'Grammar', pct: 38, status: 'necesita-refuerzo' },
+    ],
+    recommendation:
+      'Emma está comenzando. Conviene priorizar actividades visuales de vocabulario (animales, colores) y reforzar "Verb to be" con ejercicios cortos antes de avanzar a escritura.',
+  },
+}
+
+// Helpers de acceso (sustituibles por consultas reales a la base de datos).
+export function getStudentByUsername(username: string): Student | undefined {
+  const normalized = username.trim().toLowerCase()
+  const stored = typeof window !== 'undefined'
+    ? (JSON.parse(localStorage.getItem('adventure-users') ?? '[]') as Student[])
+    : []
+  const allStudents = [...students, ...stored.filter((user) => !students.some((item) => item.id === user.id))]
+  return allStudents.find((s) => s.username === normalized)
+}
+
+export function getTeacherByUsername(username: string): Teacher | undefined {
+  return teachers.find((t) => t.username === username.toLowerCase())
+}
+
+export function getActivity(id: string): Activity | undefined {
+  return activities.find((a) => a.id === id)
+}
+
+export function getActivitiesForSubject(subjectId: string): Activity[] {
+  return activities.filter((a) => a.subjectId === subjectId)
+}
+
+export function getBadge(id: string): Badge | undefined {
+  return badges.find((b) => b.id === id)
+}
+
+export function getCourseStudents(courseId: string): Student[] {
+  return students
+    .filter((s) => s.courseId === courseId)
+    .sort((a, b) => b.xp - a.xp)
+}
+
+export function getStudent(id: string): Student | undefined {
+  return students.find((s) => s.id === id)
+}
+
+export function getStudentAnalysis(id: string): StudentAnalysis | undefined {
+  return studentAnalyses[id]
+}
+
+export const GRADE_LABELS: Record<Grade, string> = {
+  '1': '1.º grado',
+  '2': '2.º grado',
+  '3': '3.º grado',
+  '4': '4.º grado',
+  '5': '5.º grado',
+  '6': '6.º grado',
+}
+
+export const GRADE_OPTIONS: Grade[] = ['1', '2', '3', '4', '5', '6']
+
+function legacyActivitiesForGrade(grade: Grade): Activity[] {
+  const baseDifficulty = grade === '1' || grade === '2' ? 'facil' : grade === '4' ? 'medio' : 'dificil'
+  const isEarlyGrade = grade === '1' || grade === '2'
+  const isAdvancedGrade = grade === '5' || grade === '6'
+
+  return activities
+    .filter((activity) => !isEarlyGrade || activity.difficulty !== 'dificil')
+    .map((activity) => ({
+      ...activity,
+      grade,
+      difficulty: baseDifficulty,
+      description: isEarlyGrade
+        ? `${activity.description} Palabras cortas y apoyo visual.`
+        : isAdvancedGrade
+          ? `${activity.description} Incluye comprensión y razonamiento avanzado.`
+          : activity.description,
+      questions: isEarlyGrade
+        ? activity.questions.slice(0, Math.max(1, Math.ceil(activity.questions.length / 2)))
+        : activity.questions,
+    }))
+}
+
+export function getActivitiesForGrade(grade: Grade): Activity[] {
+  const band = grade === '1' || grade === '2' ? 'early' : grade === '3' || grade === '4' ? 'middle' : 'upper'
+  const games = referenceGames[band].map((game) => ({ ...game, grade }))
+  // Las actividades creadas por el profesor se mantienen visibles para todos los grados.
+  const teacherMade = legacyActivitiesForGrade(grade).filter((a) => a.createdByTeacher)
+  return [...games, ...teacherMade]
+}
+
+export function getActivityForGrade(id: string, grade: Grade): Activity | undefined {
+  return (
+    getActivitiesForGrade(grade).find((activity) => activity.id === id) ??
+    // Enlaces antiguos (p. ej. el reto diario del panel) siguen funcionando.
+    legacyActivitiesForGrade(grade).find((activity) => activity.id === id)
+  )
+}
+
+export function addActivity(activity: Activity): void {
+  activities.push(activity)
+}
+
+
+
+==========================================================================================
+ARCHIVO: lib/adventure/types.ts
+==========================================================================================
+
+// Modelo de dominio de ADVENTURE.
+// Esta capa es independiente de la persistencia: hoy usa datos simulados
+// (ver ./data.ts) y mañana puede conectarse a Neon sin cambiar la UI.
+
+export type Role = 'alumno' | 'profesor' | 'admin'
+
+export type Grade = '1' | '2' | '3' | '4' | '5' | '6'
+
+export interface User {
+  id: string
+  name: string
+  username: string
+  role: Role
+  avatar: string
+}
+
+export interface Student extends User {
+  role: 'alumno'
+  courseId: string
+  grade: Grade
+  level: number
+  xp: number
+  streakDays: number
+  badgeIds: string[]
+}
+
+export interface Teacher extends User {
+  role: 'profesor'
+  courseIds: string[]
+  grade: Grade
+}
+
+export interface Course {
+  id: string
+  name: string
+  grade: string
+  teacherId: string
+  color: string
+}
+
+export interface Subject {
+  id: string
+  name: string
+  emoji: string
+  courseId: string
+}
+
+/** Tipos de juego/actividad soportados. */
+export type GameType =
+  | 'multiple-choice'
+  | 'true-false'
+  | 'complete-word'
+  | 'match-concepts'
+  | 'order-elements'
+  | 'image-question'
+  | 'memory'
+  | 'timed-quiz'
+
+export type Difficulty = 'facil' | 'medio' | 'dificil'
+
+export interface Question {
+  id: string
+  /** Enunciado principal. */
+  prompt: string
+  /** Traducción o pista bilingüe opcional. */
+  hint?: string
+  /** Imagen opcional (para image-question). */
+  image?: string
+  /** Opciones para multiple-choice / image-question / true-false. */
+  options?: string[]
+  /** Índice de la opción correcta (o respuesta booleana como 0/1). */
+  answerIndex?: number
+  /** Respuesta textual esperada (complete-word). */
+  answer?: string
+  /** Pares para match-concepts (left ↔ right). `leftImage` muestra una imagen en lugar del texto de la izquierda. */
+  pairs?: { left: string; right: string; leftImage?: string }[]
+  /** Elementos a ordenar (order-elements), en orden correcto. */
+  sequence?: string[]
+  /** Imágenes como opciones (una por cada texto de `options`; el texto se muestra solo después de responder). */
+  optionImages?: string[]
+  /** Respuestas correctas cuando se pueden elegir varias (selección múltiple con botón «Comprobar»). */
+  answerIndexes?: number[]
+  /** Texto de lectura que se muestra encima de la pregunta. */
+  passage?: string
+  /** Palabra o frase que se reproduce en voz alta con el botón de audio. */
+  speak?: string
+  /** Disposición de las opciones con imagen: en cuadrícula (por defecto) o apiladas. */
+  optionLayout?: 'grid' | 'stack'
+  /** Si es true, las opciones no se mezclan (ej. can / can’t). */
+  keepOrder?: boolean
+  /** Si es true, la respuesta se toca sobre el dibujo del cuerpo (options = partes del cuerpo). */
+  bodyPart?: boolean
+}
+
+export interface Activity {
+  id: string
+  title: string
+  description: string
+  type: GameType
+  difficulty: Difficulty
+  subjectId: string
+  grade: Grade
+  xpReward: number
+  /** Duración sugerida / límite en segundos para timed-quiz. */
+  timeLimitSec?: number
+  questions: Question[]
+  /** Marca actividades creadas por el profesor (vs. las preexistentes). */
+  createdByTeacher?: boolean
+}
+
+export interface Badge {
+  id: string
+  name: string
+  description: string
+  emoji: string
+}
+
+export interface Achievement {
+  id: string
+  name: string
+  description: string
+  emoji: string
+  goal: number
+}
+
+export interface ActivityResult {
+  id: string
+  studentId: string
+  activityId: string
+  correctCount: number
+  totalCount: number
+  timeSec: number
+  score: number
+  xpEarned: number
+  date: string
+}
+
+export interface SubjectProgress {
+  subjectId: string
+  progressPct: number
+  level: number
+  activitiesTotal: number
+  activitiesCompleted: number
+  xpEarned: number
+}
+
+/** Habilidades globales evaluadas en inglés. */
+export type Skill = 'Vocabulary' | 'Grammar' | 'Reading' | 'Listening' | 'Writing'
+
+export type SkillStatus = 'dominado' | 'en-progreso' | 'necesita-refuerzo'
+
+export interface SkillResult {
+  skill: Skill
+  pct: number
+  status: SkillStatus
+}
+
+/** Tema concreto dentro de una habilidad (ej. "Present Simple"). */
+export interface TopicResult {
+  topic: string
+  skill: Skill
+  pct: number
+  status: SkillStatus
+}
+
+/** Punto en la evolución temporal del rendimiento. */
+export interface PerformancePoint {
+  date: string
+  score: number
+}
+
+/** Resumen de una actividad realizada por un alumno. */
+export interface ActivitySummary {
+  activityId: string
+  title: string
+  score: number
+  correctCount: number
+  totalCount: number
+  timeSec: number
+  date: string
+  status: 'completada' | 'pendiente'
+}
+
+/** Análisis completo de un alumno para el portal del profesor. */
+export interface StudentAnalysis {
+  studentId: string
+  xp: number
+  level: number
+  streakDays: number
+  overallProgressPct: number
+  activitiesCompleted: number
+  activitiesPending: number
+  correctPct: number
+  incorrectPct: number
+  totalAttempts: number
+  avgTimeSec: number
+  performance: PerformancePoint[]
+  skills: SkillResult[]
+  topics: TopicResult[]
+  recentActivities: ActivitySummary[]
+  weakTopics: TopicResult[]
+  recommendation: string
+}
+
