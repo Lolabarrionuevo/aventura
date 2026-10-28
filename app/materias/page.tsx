@@ -11,6 +11,7 @@ import {
   levelFromXp,
 } from '@/lib/adventure/gamification'
 import { cn } from '@/lib/utils'
+import { getTodayCompletion } from '@/lib/adventure/progress'
 
 const DIFFICULTY_STYLE: Record<string, string> = {
   facil: 'bg-success/10 text-success',
@@ -53,11 +54,14 @@ export default function MateriasPage() {
       <div className="grid gap-4 md:grid-cols-2">
         {activities.map((activity) => {
           const meta = GAME_TYPE_META[activity.type]
+          const completedToday = Boolean(getTodayCompletion(student.id, activity.id))
           return (
             <Link
               key={activity.id}
-              href={`/actividad/${activity.id}`}
-              className="group flex items-center gap-4 rounded-3xl border border-border bg-card p-5 transition-all hover:-translate-y-1 hover:shadow-lg"
+              href={completedToday ? '#' : `/actividad/${activity.id}`}
+              aria-disabled={completedToday}
+              onClick={(event) => completedToday && event.preventDefault()}
+              className={cn('group flex items-center gap-4 rounded-3xl border border-border bg-card p-5 transition-all', completedToday ? 'cursor-not-allowed opacity-70' : 'hover:-translate-y-1 hover:shadow-lg')}
             >
               <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-muted text-3xl">
                 {meta.emoji}
@@ -78,8 +82,8 @@ export default function MateriasPage() {
                   >
                     {difficultyLabel(activity.difficulty)}
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary">
-                    <Zap className="size-3" />+{activity.xpReward} XP
+                  <span className={cn('inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold', completedToday ? 'bg-success/10 text-success' : 'bg-primary/10 text-primary')}>
+                    <Zap className="size-3" />{completedToday ? 'Completado hoy' : `+${activity.xpReward} XP`}
                   </span>
                 </div>
               </div>

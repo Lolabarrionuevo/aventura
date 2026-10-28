@@ -4,7 +4,7 @@ import { use } from 'react'
 import { notFound } from 'next/navigation'
 import { getActivity } from '@/lib/adventure/data'
 import { GamePlayer } from '@/components/games/game-player'
-import { useSession } from '@/components/session-provider'
+import { AppShell } from '@/components/app-shell'
 
 export default function ActividadPage({
   params,
@@ -12,12 +12,11 @@ export default function ActividadPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = use(params)
-  const { student } = useSession()
   const activity = getActivity(id)
 
   if (!activity) {
     return notFound()
   }
 
-  return <GamePlayer activity={activity} />
+  return <AppShell><GamePlayer activity={activity} /></AppShell>
 }
