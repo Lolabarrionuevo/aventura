@@ -638,7 +638,7 @@ export function getTeacherByUsername(username: string): Teacher | undefined {
 }
 
 export function getActivity(id: string): Activity | undefined {
-  return activities.find((a) => a.id === id)
+  return [...activities, ...gradeThreeActivities].find((activity) => activity.id === id)
 }
 
 export function getActivitiesForSubject(subjectId: string): Activity[] {
