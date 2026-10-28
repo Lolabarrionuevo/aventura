@@ -124,33 +124,47 @@ export const subjectProgress: Record<string, SubjectProgress[]> = {
 
 const gradeThreeActivities: Activity[] = [
   {
-    id: 'g3-colors', title: 'Colors', description: 'Listen and choose the right color.', type: 'image-question', difficulty: 'facil', subjectId: 's-english', grade: '3', xpReward: 10,
-    questions: ['red', 'blue', 'green', 'yellow', 'orange', 'pink'].map((color) => ({ id: `q${['red', 'blue', 'green', 'yellow', 'orange', 'pink'].indexOf(color) + 1}`, prompt: 'Listen and choose', image: `/games/ref/color-${color}.svg`, options: ['Red', 'Blue', 'Green', 'Yellow', 'Orange', 'Pink'], answerIndex: ['red', 'blue', 'green', 'yellow', 'orange', 'pink'].indexOf(color) })),
-  },
-  {
-    id: 'g3-numbers', title: 'Numbers', description: 'Count the stars and choose the number.', type: 'image-question', difficulty: 'facil', subjectId: 's-english', grade: '3', xpReward: 11,
-    questions: [3, 5, 6, 8, 10].map((count, index) => ({ id: `q${index + 1}`, prompt: 'How many?', image: `/games/ref/count-stars-${count}.svg`, options: ['3', '5', '6', '8', '10'], answerIndex: [3, 5, 6, 8, 10].indexOf(count) })),
-  },
-  {
-    id: 'g3-classroom-objects', title: 'Classroom Objects', description: 'Match each picture with its English word.', type: 'match-concepts', difficulty: 'medio', subjectId: 's-english', grade: '3', xpReward: 12,
-    questions: [{ id: 'q1', prompt: 'Match the pictures and words', pairs: [
-      { left: '/games/ref/school-pencil.svg', right: 'pencil' }, { left: '/games/ref/school-book.svg', right: 'book' }, { left: '/games/ref/school-bag.svg', right: 'school bag' }, { left: '/games/ref/school-ruler.svg', right: 'ruler' }, { left: '/games/ref/school-eraser.svg', right: 'eraser' }, { left: '/games/ref/school-scissors.svg', right: 'scissors' },
-    ] }],
-  },
-  {
-    id: 'g3-weather', title: 'Weather', description: 'Look at the picture and choose the sentence.', type: 'image-question', difficulty: 'facil', subjectId: 's-english', grade: '3', xpReward: 13,
-    questions: ['sunny', 'rainy', 'cloudy', 'windy', 'snowy'].map((weather, index) => ({ id: `q${index + 1}`, prompt: "What's the weather like?", image: `/games/ref/weather-${weather}.svg`, options: ["It's sunny", "It's rainy", "It's cloudy", "It's windy", "It's snowy"], answerIndex: index })),
-  },
-  {
-    id: 'g3-write-word', title: 'Write the Word', description: 'Look at the picture and complete the word.', type: 'complete-word', difficulty: 'medio', subjectId: 's-english', grade: '3', xpReward: 14,
+    id: 'g3-colors', title: 'Clothes: What is it?', description: 'Identify clothes from clear pictures.', type: 'image-question', difficulty: 'facil', subjectId: 's-english', grade: '3', xpReward: 12,
     questions: [
-      { id: 'q1', prompt: 'h___', hint: 'Un lugar donde vive una familia.', image: '/games/ref/word-house.svg', answer: 'house' }, { id: 'q2', prompt: 't___', hint: 'Una planta alta con tronco y hojas.', image: '/games/ref/word-tree.svg', answer: 'tree' }, { id: 'q3', prompt: 's__', hint: 'Brilla en el cielo durante el día.', image: '/games/ref/word-sun.svg', answer: 'sun' }, { id: 'q4', prompt: 'h__', hint: 'Lo usamos en la cabeza.', image: '/games/ref/word-hat.svg', answer: 'hat' }, { id: 'q5', prompt: 'b__', hint: 'Un mueble para dormir.', image: '/games/ref/word-bed.svg', answer: 'bed' },
+      { id: 'q1', prompt: 'What is it?', image: '/games/g3-tshirt.png', options: ['T-shirt', 'Cap', 'Boots', 'Sweater'], answerIndex: 0 },
+      { id: 'q2', prompt: 'What is it?', image: '/games/g3-cap.png', options: ['Hat', 'Cap', 'T-shirt', 'Boots'], answerIndex: 1 },
+      { id: 'q3', prompt: 'What is it?', image: '/games/g3-boots.png', options: ['Boots', 'Sweater', 'Cap', 'Hat'], answerIndex: 0 },
     ],
   },
   {
-    id: 'g3-food-memory', title: 'Food Memory', description: 'Find the matching food pictures and words.', type: 'memory', difficulty: 'medio', subjectId: 's-english', grade: '3', xpReward: 15,
-    questions: [{ id: 'q1', prompt: 'Find the matching pairs', pairs: [
-      { left: '/games/ref/food-apple.svg', right: 'apple' }, { left: '/games/ref/food-broccoli.svg', right: 'broccoli' }, { left: '/games/ref/food-burger.svg', right: 'burger' }, { left: '/games/ref/food-fish.svg', right: 'fish' }, { left: '/games/ref/food-fries.svg', right: 'fries' }, { left: '/games/ref/food-icecream.svg', right: 'ice cream' },
+    id: 'g3-clothes-wearing', title: 'Clothes: What are they wearing?', description: 'Choose the clothing word that completes each sentence.', type: 'image-question', difficulty: 'medio', subjectId: 's-english', grade: '3', xpReward: 14,
+    questions: [
+      { id: 'q1', prompt: 'Complete the sentence: He is wearing an orange ______.', image: '/games/g3-tshirt.png', options: ['T-shirt', 'Cap', 'Boots', 'Sweater'], answerIndex: 0 },
+      { id: 'q2', prompt: 'What is she wearing?', image: '/games/g3-sweater.png', options: ['Hat', 'Boots', 'Sweater', 'Cap'], answerIndex: 2 },
+      { id: 'q3', prompt: 'What is he wearing on his feet?', image: '/games/g3-boots.png', options: ['Cap', 'Boots', 'T-shirt', 'Hat'], answerIndex: 1 },
+    ],
+  },
+  {
+    id: 'g3-clothes-match', title: 'Clothes: Picture match', description: 'Match each clothing picture with its English word.', type: 'match-concepts', difficulty: 'medio', subjectId: 's-english', grade: '3', xpReward: 15,
+    questions: [{ id: 'q1', prompt: 'Match each picture with a word.', pairs: [
+      { left: '/games/g3-tshirt.png', right: 'T-shirt' }, { left: '/games/g3-cap.png', right: 'Cap' }, { left: '/games/g3-boots.png', right: 'Boots' }, { left: '/games/g3-hat.png', right: 'Hat' }, { left: '/games/g3-sweater.png', right: 'Sweater' },
+    ] }],
+  },
+  {
+    id: 'g3-body-parts', title: 'Body Parts: Find the word', description: 'Identify visible body parts from pictures.', type: 'image-question', difficulty: 'facil', subjectId: 's-english', grade: '3', xpReward: 13,
+    questions: [
+      { id: 'q1', prompt: 'Which part of the body is this?', image: '/games/g3-eye.png', options: ['Eye', 'Ear', 'Nose', 'Mouth'], answerIndex: 0 },
+      { id: 'q2', prompt: 'Which part of the body is this?', image: '/games/g3-ear.png', options: ['Hand', 'Ear', 'Finger', 'Neck'], answerIndex: 1 },
+      { id: 'q3', prompt: 'Which part of the body is this?', image: '/games/g3-hand.png', options: ['Arm', 'Leg', 'Hand', 'Foot'], answerIndex: 2 },
+    ],
+  },
+  {
+    id: 'g3-body-parts-complete', title: 'Body Parts: Complete', description: 'Complete the English word using the picture as context.', type: 'complete-word', difficulty: 'medio', subjectId: 's-english', grade: '3', xpReward: 16,
+    questions: [
+      { id: 'q1', prompt: 'e__', image: '/games/g3-eye.png', answer: 'eye' },
+      { id: 'q2', prompt: 'e__', image: '/games/g3-ear.png', answer: 'ear' },
+      { id: 'q3', prompt: 'h___', image: '/games/g3-hand.png', answer: 'hand' },
+    ],
+  },
+  {
+    id: 'g3-body-parts-memory', title: 'Body Parts: Memory', description: 'Find each body-part picture and its matching word.', type: 'memory', difficulty: 'medio', subjectId: 's-english', xpReward: 17, grade: '3',
+    questions: [{ id: 'q1', prompt: 'Find the matching picture and word pairs.', pairs: [
+      { left: '/games/g3-eye.png', right: 'Eye' }, { left: '/games/g3-ear.png', right: 'Ear' }, { left: '/games/g3-hand.png', right: 'Hand' },
     ] }],
   },
 ]
