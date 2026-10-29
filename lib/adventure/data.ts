@@ -122,6 +122,60 @@ export const subjectProgress: Record<string, SubjectProgress[]> = {
   ],
 }
 
+export const dailyHalloweenChallenge: Activity = {
+  id: 'daily-halloween',
+  title: 'Halloween Challenge',
+  description: 'A special Halloween challenge. Can you answer all the questions?',
+  type: 'multiple-choice',
+  difficulty: 'medio',
+  subjectId: 's-english',
+  grade: '3',
+  xpReward: 100,
+  questions: [
+    {
+      id: 'q1',
+      prompt: 'What can you see?',
+      image: 'https://images.pexels.com/photos/28679549/pexels-photo-28679549.jpeg?auto=compress&cs=tinysrgb&h=350&w=350',
+      options: ['A pumpkin', 'A dog', 'A book'],
+      answerIndex: 0,
+    },
+    {
+      id: 'q2',
+      prompt: 'What can you see?',
+      image: 'https://images.pexels.com/photos/5590088/pexels-photo-5590088.jpeg?auto=compress&cs=tinysrgb&h=350&w=350',
+      options: ['A ghost', 'A teacher', 'A car'],
+      answerIndex: 0,
+    },
+    {
+      id: 'q3',
+      prompt: 'What can you see?',
+      image: 'https://images.pexels.com/photos/10012900/pexels-photo-10012900.jpeg?auto=compress&cs=tinysrgb&h=350&w=350',
+      options: ['A doctor', 'A witch', 'A farmer'],
+      answerIndex: 1,
+    },
+    {
+      id: 'q4',
+      prompt: 'What can you see?',
+      image: 'https://images.pexels.com/photos/3095465/pexels-photo-3095465.png?auto=compress&cs=tinysrgb&h=350&w=350',
+      options: ['A ball', 'A pencil', 'Candy'],
+      answerIndex: 2,
+    },
+    {
+      id: 'q5',
+      prompt: 'Choose the correct word.',
+      image: 'https://images.pexels.com/photos/33551064/pexels-photo-33551064.jpeg?auto=compress&cs=tinysrgb&h=350&w=350',
+      options: ['A school', 'A haunted house', 'A park'],
+      answerIndex: 1,
+    },
+    {
+      id: 'q6',
+      prompt: 'Complete the sentence: The _____ is orange.',
+      options: ['pumpkin', 'ghost', 'bat'],
+      answerIndex: 0,
+    },
+  ],
+}
+
 const gradeThreeActivities: Activity[] = [
   {
     id: 'g3-school-subjects',
@@ -185,47 +239,44 @@ const gradeThreeActivities: Activity[] = [
   },
   {
     id: 'g3-food',
-    title: 'Food: Likes and Dislikes',
-    description: 'Read what each character likes and choose the food.',
-    type: 'image-question',
+    title: 'Food: Match the Pictures',
+    description: 'Match each food picture with the correct word.',
+    type: 'match-images',
     difficulty: 'medio',
     subjectId: 's-english',
     grade: '3',
     xpReward: 65,
     questions: [
-      { id: 'q1', prompt: 'Look at the food scene. Which food can you see?', image: '/games/food-scene.png', options: ['A burger', 'A shoe', 'A pencil'], answerIndex: 0 },
-      { id: 'q2', prompt: 'Look at the food scene. Which fruit can you see?', image: '/games/food-scene.png', options: ['An apple', 'A carrot', 'A sandwich'], answerIndex: 0 },
-      { id: 'q3', prompt: 'Look at the food scene. Which dish is in a bowl?', image: '/games/food-scene.png', options: ['Soup', 'Pizza', 'A burger'], answerIndex: 0 },
+      {
+        id: 'q1',
+        prompt: 'Match each picture with the word.',
+        pairs: [
+          { left: '/games/apple.png', right: 'apple' },
+          { left: 'https://images.pexels.com/photos/16829201/pexels-photo-16829201.jpeg?auto=compress&cs=tinysrgb&h=350&w=350', right: 'banana' },
+          { left: 'https://images.pexels.com/photos/13133609/pexels-photo-13133609.jpeg?auto=compress&cs=tinysrgb&h=350&w=350', right: 'broccoli' },
+          { left: 'https://images.pexels.com/photos/16241419/pexels-photo-16241419.jpeg?auto=compress&cs=tinysrgb&h=350&w=350', right: 'burger' },
+          { left: 'https://images.pexels.com/photos/8696562/pexels-photo-8696562.jpeg?auto=compress&cs=tinysrgb&h=350&w=350', right: 'fish' },
+          { left: 'https://images.pexels.com/photos/32986485/pexels-photo-32986485.jpeg?auto=compress&cs=tinysrgb&h=350&w=350', right: 'fries' },
+          { left: 'https://images.pexels.com/photos/19087695/pexels-photo-19087695.jpeg?auto=compress&cs=tinysrgb&h=350&w=350', right: 'ice cream' },
+        ],
+      },
     ],
   },
   {
-    id: 'g3-body',
-    title: 'The Monster: Has Got',
-    description: 'Look closely and choose the sentence that describes the monster.',
-    type: 'true-false',
+    id: 'g3-sentences',
+    title: 'Build a Sentence',
+    description: 'Put the words in the correct order to make a sentence.',
+    type: 'sentence-building',
     difficulty: 'medio',
     subjectId: 's-english',
     grade: '3',
     xpReward: 70,
     questions: [
-      { id: 'q1', prompt: 'Look at the monster. It has got three eyes.', image: '/games/monster.png', options: ['True', 'False'], answerIndex: 0 },
-      { id: 'q2', prompt: 'Look at the monster. It has got six legs.', image: '/games/monster.png', options: ['True', 'False'], answerIndex: 0 },
-      { id: 'q3', prompt: 'Look at the monster. It has got one ear.', image: '/games/monster.png', options: ['True', 'False'], answerIndex: 1 },
-    ],
-  },
-  {
-    id: 'g3-beach',
-    title: 'At the Beach: What Do They Want?',
-    description: 'Read the beach scene and choose the sentence that fits.',
-    type: 'order-elements',
-    difficulty: 'medio',
-    subjectId: 's-english',
-    grade: '3',
-    xpReward: 75,
-    questions: [
-      { id: 'q1', prompt: 'I want to build a sandcastle.', sequence: ['I', 'want', 'to', 'build', 'a', 'sandcastle'] },
-      { id: 'q2', prompt: 'She doesn\'t want to swim.', sequence: ['She', 'doesn\'t', 'want', 'to', 'swim'] },
-      { id: 'q3', prompt: 'He wants to surf.', sequence: ['He', 'wants', 'to', 'surf'] },
+      { id: 'q1', prompt: 'Build the sentence about the picture.', image: 'https://images.pexels.com/photos/10012900/pexels-photo-10012900.jpeg?auto=compress&cs=tinysrgb&h=350&w=350', sequence: ['The', 'witch', 'is', 'flying'] },
+      { id: 'q2', prompt: 'Build the sentence about the picture.', image: 'https://images.pexels.com/photos/5590088/pexels-photo-5590088.jpeg?auto=compress&cs=tinysrgb&h=350&w=350', sequence: ['The', 'ghost', 'is', 'white'] },
+      { id: 'q3', prompt: 'Build the sentence about the picture.', image: 'https://images.pexels.com/photos/28679549/pexels-photo-28679549.jpeg?auto=compress&cs=tinysrgb&h=350&w=350', sequence: ['I', 'can', 'see', 'a', 'pumpkin'] },
+      { id: 'q4', prompt: 'Build the sentence about the picture.', image: 'https://images.pexels.com/photos/5635093/pexels-photo-5635093.jpeg?auto=compress&cs=tinysrgb&h=350&w=350', sequence: ['The', 'bat', 'can', 'fly'] },
+      { id: 'q5', prompt: 'Build the sentence about the picture.', image: 'https://images.pexels.com/photos/6770720/pexels-photo-6770720.jpeg?auto=compress&cs=tinysrgb&h=350&w=350', sequence: ['The', 'cat', 'is', 'black'] },
     ],
   },
 ]
@@ -760,6 +811,7 @@ export function getActivitiesForGrade(grade: Grade): Activity[] {
 }
 
 export function getActivityForGrade(id: string, grade: Grade): Activity | undefined {
+  if (id === 'daily-halloween') return dailyHalloweenChallenge
   return getActivitiesForGrade(grade).find((activity) => activity.id === id)
 }
 

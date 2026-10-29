@@ -119,4 +119,14 @@ export const GAME_TYPE_META: Record<
     emoji: '⏱️',
     description: 'Responde antes de que acabe el tiempo',
   },
+  'sentence-building': {
+    label: 'Build a Sentence',
+    emoji: '🧩',
+    description: 'Put the words in the right order',
+  },
+  'match-images': {
+    label: 'Match Images',
+    emoji: '🍱',
+    description: 'Match each picture with the word',
+  },
 }

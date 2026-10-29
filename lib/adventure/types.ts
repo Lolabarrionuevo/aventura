@@ -55,6 +55,8 @@ export type GameType =
   | 'image-question'
   | 'memory'
   | 'timed-quiz'
+  | 'sentence-building'
+  | 'match-images'
 
 export type Difficulty = 'facil' | 'medio' | 'dificil'
 

@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Sparkles,
   Crown,
+  Check,
 } from 'lucide-react'
 import { AppShell } from '@/components/app-shell'
 import { Avatar } from '@/components/avatar'
@@ -21,6 +22,7 @@ import {
   getCourseStudents,
   getBadge,
   GRADE_LABELS,
+  dailyHalloweenChallenge,
 } from '@/lib/adventure/data'
 import {
   levelFromXp,
@@ -29,6 +31,7 @@ import {
   GAME_TYPE_META,
 } from '@/lib/adventure/gamification'
 import { cn } from '@/lib/utils'
+import { getTodayCompletion } from '@/lib/adventure/progress'
 
 export default function DashboardPage() {
   const { student } = useSession()
@@ -46,7 +49,8 @@ export default function DashboardPage() {
 
   const classRanking = getCourseStudents(student.courseId)
   const myRank = classRanking.findIndex((s) => s.id === student.id) + 1
-  const dailyChallenge = getActivitiesForSubject(english.id)[3]
+  const dailyChallenge = dailyHalloweenChallenge
+  const dailyDone = !!getTodayCompletion(student.id, dailyChallenge.id)
 
   return (
     <AppShell>
@@ -126,31 +130,37 @@ export default function DashboardPage() {
           </section>
 
           {/* Desafío diario */}
-          {dailyChallenge && (
-            <section className="rounded-3xl border-2 border-dashed border-accent/60 bg-accent/5 p-6">
-              <div className="mb-3 flex items-center gap-2">
-                <span className="grid size-10 place-items-center rounded-xl bg-accent/20 text-accent-foreground">
-                  <Target className="size-5 text-accent" />
+          <section className="rounded-3xl border-2 border-dashed border-accent/60 bg-accent/5 p-6">
+            <div className="mb-3 flex items-center gap-2">
+              <span className="grid size-10 place-items-center rounded-xl bg-accent/20 text-accent-foreground">
+                <Target className="size-5 text-accent" />
+              </span>
+              <div>
+                <p className="font-display text-lg font-extrabold text-foreground">
+                  Desafío diario 🎯
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {dailyDone ? 'You completed today\'s challenge! Come back tomorrow.' : 'Complete the challenge and earn XP!'}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col items-start justify-between gap-3 rounded-2xl bg-card p-4 sm:flex-row sm:items-center">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl" aria-hidden="true">
+                  {GAME_TYPE_META[dailyChallenge.type]?.emoji ?? '🎯'}
                 </span>
                 <div>
-                  <p className="font-display text-lg font-extrabold text-foreground">
-                    Desafío diario 🎯
+                  <p className="font-bold text-card-foreground">{dailyChallenge.title}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {GAME_TYPE_META[dailyChallenge.type]?.label ?? 'Challenge'} · +{dailyChallenge.xpReward} XP
                   </p>
-                  <p className="text-sm text-muted-foreground">¡Completa y gana XP extra!</p>
                 </div>
               </div>
-              <div className="flex flex-col items-start justify-between gap-3 rounded-2xl bg-card p-4 sm:flex-row sm:items-center">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl" aria-hidden="true">
-                    {GAME_TYPE_META[dailyChallenge.type].emoji}
-                  </span>
-                  <div>
-                    <p className="font-bold text-card-foreground">{dailyChallenge.title}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {GAME_TYPE_META[dailyChallenge.type].label} · +{dailyChallenge.xpReward} XP
-                    </p>
-                  </div>
-                </div>
+              {dailyDone ? (
+                <span className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-success/20 px-4 font-extrabold text-success">
+                  <Check className="size-4" /> Done today!
+                </span>
+              ) : (
                 <Link
                   href={`/actividad/${dailyChallenge.id}`}
                   className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-accent px-4 font-extrabold text-accent-foreground transition-colors hover:bg-accent/90"
@@ -158,9 +168,9 @@ export default function DashboardPage() {
                   Jugar
                   <Sparkles className="size-4" />
                 </Link>
-              </div>
-            </section>
-          )}
+              )}
+            </div>
+          </section>
         </div>
 
         {/* Columna lateral */}
