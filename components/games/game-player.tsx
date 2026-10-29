@@ -4,9 +4,9 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { Trophy, Zap, Star, Home, RefreshCw } from 'lucide-react'
 import { useSession } from '@/components/session-provider'
-import { scoreActivity, levelFromXp, xpToNextLevel } from '@/lib/adventure/gamification'
+import { scoreActivity, levelFromXp, xpToNextLevel, newlyEarnedBadges } from '@/lib/adventure/gamification'
 import { recordCompletion, getTodayCompletion } from '@/lib/adventure/progress'
-import type { Activity } from '@/lib/adventure/types'
+import type { Activity, Badge } from '@/lib/adventure/types'
 import { MultipleChoice } from '@/components/games/multiple-choice'
 import { TrueFalse } from '@/components/games/true-false'
 import { CompleteWord } from '@/components/games/complete-word'
@@ -31,6 +31,7 @@ export function GamePlayer({ activity }: GamePlayerProps) {
   const [finished, setFinished] = useState(false)
   const [startTime] = useState(() => Date.now())
   const [results, setResults] = useState<boolean[]>([])
+  const [newBadges, setNewBadges] = useState<Badge[]>([])
 
   const questions = activity.questions
   const question = questions[currentIndex]
@@ -89,10 +90,16 @@ export function GamePlayer({ activity }: GamePlayerProps) {
     }
 
     if (actualXp > 0) {
-      setStudent({
+      const updatedStudent: typeof student = {
         ...student,
         xp: student.xp + actualXp,
-      })
+      }
+      const earned = newlyEarnedBadges(updatedStudent, activity.id, score)
+      if (earned.length > 0) {
+        updatedStudent.badgeIds = [...updatedStudent.badgeIds, ...earned.map((b) => b.id)]
+        setNewBadges(earned)
+      }
+      setStudent(updatedStudent)
     }
 
     setFinished(true)
@@ -148,6 +155,22 @@ export function GamePlayer({ activity }: GamePlayerProps) {
           </div>
         )}
 
+        {newBadges.length > 0 && (
+          <div className="flex flex-col items-center gap-2 rounded-2xl border-2 border-accent/40 bg-accent/10 p-4">
+            <p className="font-display text-lg font-extrabold text-accent-foreground">New badges!</p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              {newBadges.map((badge) => (
+                <div key={badge.id} className="flex flex-col items-center gap-1">
+                  <span className="grid size-12 place-items-center rounded-2xl bg-primary/10 text-2xl">
+                    {badge.emoji}
+                  </span>
+                  <span className="text-xs font-bold text-foreground">{badge.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-wrap items-center justify-center gap-3">
           <button
             onClick={() => {
@@ -156,6 +179,7 @@ export function GamePlayer({ activity }: GamePlayerProps) {
               setShowResult(false)
               setFinished(false)
               setResults([])
+              setNewBadges([])
             }}
             className="inline-flex items-center gap-2 rounded-xl border-2 border-border bg-card px-5 py-2.5 font-bold text-foreground transition-colors hover:bg-muted"
           >
@@ -204,7 +228,9 @@ export function GamePlayer({ activity }: GamePlayerProps) {
       </div>
 
       <div className="rounded-3xl border border-border bg-card p-6">
-        {renderQuestion(question, activity, showResult, handleAnswer)}
+        <div key={currentIndex}>
+          {renderQuestion(question, activity, showResult, handleAnswer)}
+        </div>
       </div>
 
       {showResult && (

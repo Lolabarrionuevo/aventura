@@ -10,6 +10,8 @@ import type {
   Teacher,
 } from './types'
 
+const USERS_KEY = 'adventure-users'
+
 export const badges: Badge[] = [
   { id: 'b-first', name: 'Primer paso', description: 'Completaste tu primera actividad', emoji: '🌱' },
   { id: 'b-streak3', name: 'En racha', description: '3 días seguidos aprendiendo', emoji: '🔥' },
@@ -762,9 +764,18 @@ export function getBadge(id: string): Badge | undefined {
 }
 
 export function getCourseStudents(courseId: string): Student[] {
-  return students
-    .filter((s) => s.courseId === courseId)
-    .sort((a, b) => b.xp - a.xp)
+  const stored = typeof window !== 'undefined'
+    ? (JSON.parse(localStorage.getItem(USERS_KEY) ?? '[]') as Student[])
+    : []
+  const merged = [...students]
+  for (const user of stored) {
+    const idx = merged.findIndex((s) => s.id === user.id)
+    if (idx >= 0) merged[idx] = user
+    else merged.push(user)
+  }
+  return merged
+    .filter((s) => s.courseId === courseId && s.role === 'alumno')
+    .sort((a, b) => b.xp - a.xp || a.name.localeCompare(b.name))
 }
 
 export function getStudent(id: string): Student | undefined {
